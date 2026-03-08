@@ -1233,6 +1233,30 @@ function removeUndefinedFields(obj){
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style id="hc-v10-cleanup">
+/* v10 cleanup: remove unnecessary license UI and drawer heading in X tab */
+#sectionX .hc-x-tabbtn[data-xtab="license"],
+#sectionX #hcXTab_license{
+  display:none !important;
+}
+#sectionX #accountsDrawer .drawerHeader{
+  display:none !important;
+}
+#sectionX #accountsDrawer .drawerTabs{
+  display:none !important;
+}
+#sectionX #drawerTab_lic{
+  display:none !important;
+}
+#sectionX #drawerTab_acc{
+  display:block !important;
+}
+#sectionX #accountsDrawer{
+  margin-top:0 !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -5016,154 +5040,35 @@ wrapper.appendChild(account);
 </script>
 
 
-<style id="hc-x-tabs-hotfix">
-#sectionX .hc-x-tabs-wrap{display:grid;gap:14px;margin-top:14px}
-#sectionX .hc-x-tabbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-#sectionX .hc-x-tabbtn{
-  padding:11px 16px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.08);color:rgba(255,255,255,.92);
-  font-weight:800
-}
-#sectionX .hc-x-tabbtn.active{
-  background:linear-gradient(135deg, rgba(0,229,255,.22), rgba(180,0,255,.18));
-  border-color:rgba(0,229,255,.28);
-  box-shadow:0 0 24px rgba(0,229,255,.12)
-}
-#sectionX .hc-x-panel{display:none}
-#sectionX .hc-x-panel.active{display:block}
-#sectionX .hc-x-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
-@media (min-width: 1100px){
-  #sectionX .hc-x-grid{grid-template-columns:minmax(0,1fr) 320px;align-items:start}
-}
-#sectionX .hc-x-license-card .panelActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-@media (max-width:720px){
-  #sectionX .hc-x-tabbar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
-  #sectionX .hc-x-tabbtn{flex:0 0 auto;white-space:nowrap}
-}
-</style>
-<script id="hc-x-tabs-hotfix-script">
+<script id="hc-v10-cleanup-script">
 (function(){
-  function ensureXTabs(){
-    var sectionX = document.getElementById('sectionX');
-    var pageMain = document.getElementById('pageMain');
-    var drawer = document.getElementById('accountsDrawer');
-    if(!sectionX || !pageMain || !drawer) return;
+  function fixXCleanup(){
+    var wrap = document.getElementById('hcXTabSystem');
+    if(!wrap) return;
+    var licenseBtn = wrap.querySelector('.hc-x-tabbtn[data-xtab="license"]');
+    var licensePanel = document.getElementById('hcXTab_license');
+    if(licenseBtn) licenseBtn.style.display = 'none';
+    if(licensePanel) licensePanel.style.display = 'none';
 
-    var existing = document.getElementById('hcXTabSystem');
-    if(!existing){
-      existing = document.createElement('div');
-      existing.id = 'hcXTabSystem';
-      existing.className = 'hc-x-tabs-wrap';
-      existing.innerHTML = ''
-        + '<div class="hc-x-tabbar" role="tablist" aria-label="Xタブ">'
-        + '  <button class="hc-x-tabbtn active" type="button" data-xtab="compose">投稿作成</button>'
-        + '  <button class="hc-x-tabbtn" type="button" data-xtab="autopost">自動ポスト</button>'
-        + '  <button class="hc-x-tabbtn" type="button" data-xtab="account">アカウント</button>'
-        + '  <button class="hc-x-tabbtn" type="button" data-xtab="license">ライセンス</button>'
-        + '</div>'
-        + '<div class="hc-x-panel active" id="hcXTab_compose"></div>'
-        + '<div class="hc-x-panel" id="hcXTab_autopost"></div>'
-        + '<div class="hc-x-panel" id="hcXTab_account"></div>'
-        + '<div class="hc-x-panel" id="hcXTab_license"></div>';
-
-      var title = sectionX.querySelector('.page-title');
-      if(title && title.nextSibling){
-        title.parentNode.insertBefore(existing, title.nextSibling);
-      }else{
-        sectionX.appendChild(existing);
-      }
-    }
-
-    var compose = document.getElementById('hcXTab_compose');
-    var autopost = document.getElementById('hcXTab_autopost');
-    var account = document.getElementById('hcXTab_account');
-    var license = document.getElementById('hcXTab_license');
-    if(!compose || !autopost || !account || !license) return;
-
-    if(pageMain.parentElement !== compose){ compose.appendChild(pageMain); }
-
-    var autoCard = document.getElementById('xAutoPostTitle');
-    autoCard = autoCard ? autoCard.closest('.card') : null;
-    if(autoCard && autoCard.parentElement !== autopost){ autopost.appendChild(autoCard); }
-
-    var drawerPanel = drawer.querySelector('.drawerPanel') || drawer.firstElementChild || drawer;
-    if(!document.getElementById('hcXAccountGrid')){
-      var grid = document.createElement('div');
-      grid.id = 'hcXAccountGrid';
-      grid.className = 'hc-x-grid';
-      account.appendChild(grid);
-      grid.appendChild(drawer);
-
-      var licCard = document.createElement('div');
-      licCard.className = 'card hc-x-license-card';
-      licCard.innerHTML = ''
-        + '<div style="font-weight:800;margin-bottom:8px;">ライセンス</div>'
-        + '<div class="muted">情報確認と再認証をここから行えます。</div>'
-        + '<div class="panelActions">'
-        + '  <button type="button" class="btn primary" id="hcXOpenInfoBtn">情報を開く</button>'
-        + '  <button type="button" class="btn secondary" id="hcXReauthBtn">ライセンス再認証</button>'
-        + '</div>';
-      license.appendChild(licCard);
-    } else {
-      var grid2 = document.getElementById('hcXAccountGrid');
-      if(drawer.parentElement !== grid2){ grid2.appendChild(drawer); }
-    }
-
-    drawer.style.display = 'block';
-    drawer.style.position = 'static';
-    drawer.style.transform = 'none';
-    drawer.style.width = '100%';
-    drawer.style.maxWidth = '100%';
-    drawer.style.height = 'auto';
-    drawer.style.maxHeight = 'none';
-    var ov = document.getElementById('drawerOverlay');
-    if(ov) ov.style.display = 'none';
-
-    var tabs = existing.querySelectorAll('.hc-x-tabbtn');
-    tabs.forEach(function(btn){
-      if(btn.dataset.bound) return;
-      btn.dataset.bound = '1';
-      btn.addEventListener('click', function(){
-        var name = btn.getAttribute('data-xtab');
-        tabs.forEach(function(b){ b.classList.toggle('active', b === btn); });
-        existing.querySelectorAll('.hc-x-panel').forEach(function(p){
-          p.classList.toggle('active', p.id === 'hcXTab_' + name);
-        });
-      });
-    });
-
-    var infoBtn = document.getElementById('hcXOpenInfoBtn');
-    if(infoBtn && !infoBtn.dataset.bound){
-      infoBtn.dataset.bound = '1';
-      infoBtn.addEventListener('click', function(){
-        var src = document.getElementById('openInfoFromDrawer') || document.querySelector('[data-hc-info]');
-        if(src) src.click();
-      });
-    }
-    var reauthBtn = document.getElementById('hcXReauthBtn');
-    if(reauthBtn && !reauthBtn.dataset.bound){
-      reauthBtn.dataset.bound = '1';
-      reauthBtn.addEventListener('click', function(){
-        var src = document.getElementById('reauthFromDrawer');
-        if(src) src.click();
-      });
+    var activeBtn = wrap.querySelector('.hc-x-tabbtn.active');
+    if(activeBtn && activeBtn.getAttribute('data-xtab') === 'license'){
+      activeBtn.classList.remove('active');
+      var accBtn = wrap.querySelector('.hc-x-tabbtn[data-xtab="account"]') || wrap.querySelector('.hc-x-tabbtn[data-xtab="compose"]');
+      var accPanel = document.getElementById('hcXTab_account') || document.getElementById('hcXTab_compose');
+      if(accBtn) accBtn.classList.add('active');
+      wrap.querySelectorAll('.hc-x-panel').forEach(function(p){ p.classList.remove('active'); p.style.display=''; });
+      if(accPanel) accPanel.classList.add('active');
     }
   }
-
-  window.ensureXTabs = ensureXTabs;
   if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', ensureXTabs);
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(fixXCleanup, 50); });
   }else{
-    ensureXTabs();
+    setTimeout(fixXCleanup, 50);
   }
-  window.addEventListener('load', ensureXTabs);
   document.addEventListener('click', function(e){
-    var btn = e.target && e.target.closest ? e.target.closest('[data-section="sectionX"]') : null;
-    if(btn) setTimeout(ensureXTabs, 50);
-  }, true);
-  setTimeout(ensureXTabs, 200);
-  setTimeout(ensureXTabs, 800);
+    var btn = e.target && e.target.closest ? e.target.closest('#sectionX .app-navbtn, #mobileAppNav .app-navbtn, #desktopAppNav .app-navbtn, .hc-x-tabbtn') : null;
+    if(btn) setTimeout(fixXCleanup, 50);
+  });
 })();
 </script>
 
