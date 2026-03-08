@@ -1234,26 +1234,39 @@ function removeUndefinedFields(obj){
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<style id="hc-v10-cleanup">
-/* v10 cleanup: remove unnecessary license UI and drawer heading in X tab */
-#sectionX .hc-x-tabbtn[data-xtab="license"],
-#sectionX #hcXTab_license{
-  display:none !important;
+<style id="hc-v11-x-cleanup-fix">
+/* v11: keep X tabs visible, remove extra license/header clutter inside X account tab */
+#sectionX #hcXTabSystem .hc-x-tabbtn[data-xtab="license"],
+#sectionX #hcXTab_license{ display:none !important; }
+#sectionX #hcXTabSystem .drawerHeader,
+#sectionX #hcXTabSystem #drawerCloseBtn,
+#sectionX #hcXTabSystem .drawerTitle,
+#sectionX #hcXTabSystem .drawerTab[data-tab="lic"],
+#sectionX #hcXTabSystem #drawerTab_lic,
+#sectionX #hcXTabSystem .drawerTabs{ display:none !important; }
+#sectionX #hcXTab_account #accountsDrawer{
+  position: static !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  transform: none !important;
+  display: block !important;
+  border-radius: 18px !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background: transparent !important;
 }
-#sectionX #accountsDrawer .drawerHeader{
-  display:none !important;
+#sectionX #hcXTab_account #accountsDrawer .drawerPanel{
+  background: transparent !important;
+  max-height: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
 }
-#sectionX #accountsDrawer .drawerTabs{
-  display:none !important;
-}
-#sectionX #drawerTab_lic{
-  display:none !important;
-}
-#sectionX #drawerTab_acc{
-  display:block !important;
-}
-#sectionX #accountsDrawer{
-  margin-top:0 !important;
+#sectionX #hcXTab_account #accountsDrawer .drawerBody{
+  padding: 0 !important;
+  overflow: visible !important;
 }
 </style>
 
@@ -5040,35 +5053,50 @@ wrapper.appendChild(account);
 </script>
 
 
-<script id="hc-v10-cleanup-script">
+<script id="hc-v11-force-x-tabs">
 (function(){
-  function fixXCleanup(){
-    var wrap = document.getElementById('hcXTabSystem');
-    if(!wrap) return;
-    var licenseBtn = wrap.querySelector('.hc-x-tabbtn[data-xtab="license"]');
-    var licensePanel = document.getElementById('hcXTab_license');
-    if(licenseBtn) licenseBtn.style.display = 'none';
-    if(licensePanel) licensePanel.style.display = 'none';
-
-    var activeBtn = wrap.querySelector('.hc-x-tabbtn.active');
-    if(activeBtn && activeBtn.getAttribute('data-xtab') === 'license'){
-      activeBtn.classList.remove('active');
-      var accBtn = wrap.querySelector('.hc-x-tabbtn[data-xtab="account"]') || wrap.querySelector('.hc-x-tabbtn[data-xtab="compose"]');
-      var accPanel = document.getElementById('hcXTab_account') || document.getElementById('hcXTab_compose');
-      if(accBtn) accBtn.classList.add('active');
-      wrap.querySelectorAll('.hc-x-panel').forEach(function(p){ p.classList.remove('active'); p.style.display=''; });
-      if(accPanel) accPanel.classList.add('active');
-    }
+  function setXTab(name){
+    var root = document.getElementById('hcXTabSystem');
+    if(!root) return;
+    if(name === 'license') name = 'account';
+    root.querySelectorAll('.hc-x-tabbtn').forEach(function(b){
+      var on = b.getAttribute('data-xtab') === name;
+      b.classList.toggle('active', on);
+    });
+    root.querySelectorAll('.hc-x-panel').forEach(function(p){
+      p.classList.toggle('active', p.id === 'hcXTab_' + name);
+    });
   }
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ setTimeout(fixXCleanup, 50); });
-  }else{
-    setTimeout(fixXCleanup, 50);
+  function ensureXTabs(){
+    try{
+      if(typeof buildXTabs === 'function') buildXTabs();
+      var root = document.getElementById('hcXTabSystem');
+      if(!root) return;
+      var licBtn = root.querySelector('.hc-x-tabbtn[data-xtab="license"]');
+      if(licBtn) licBtn.style.display = 'none';
+      var licPanel = document.getElementById('hcXTab_license');
+      if(licPanel) licPanel.style.display = 'none';
+      var accountPanel = document.getElementById('hcXTab_account');
+      var drawer = document.getElementById('accountsDrawer');
+      if(accountPanel && drawer && drawer.parentElement !== accountPanel){
+        accountPanel.appendChild(drawer);
+      }
+      setXTab('compose');
+      root.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
+        btn.onclick = function(){ setXTab(btn.getAttribute('data-xtab')); };
+      });
+    }catch(e){ console.error(e); }
   }
-  document.addEventListener('click', function(e){
-    var btn = e.target && e.target.closest ? e.target.closest('#sectionX .app-navbtn, #mobileAppNav .app-navbtn, #desktopAppNav .app-navbtn, .hc-x-tabbtn') : null;
-    if(btn) setTimeout(fixXCleanup, 50);
+  document.addEventListener('DOMContentLoaded', function(){
+    ensureXTabs();
+    setTimeout(ensureXTabs, 50);
+    setTimeout(ensureXTabs, 300);
+    setTimeout(ensureXTabs, 800);
   });
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.app-navbtn[data-section="sectionX"]');
+    if(btn){ setTimeout(ensureXTabs, 30); }
+  }, true);
 })();
 </script>
 
