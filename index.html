@@ -1181,300 +1181,6 @@ font-size:14px;
 
 }
 
-
-
-/* ===== Desktop hard-fix layout ===== */
-@media (min-width: 1280px){
-  html, body{ overflow-x:hidden !important; }
-  body{
-    max-width:none !important;
-    margin:0 !important;
-  }
-  #appContainer{
-    max-width: 1680px !important;
-    margin: 0 auto !important;
-    padding: 16px 380px 24px 20px !important;
-    box-sizing:border-box;
-  }
-  .topbar{
-    max-width:none !important;
-  }
-  .app-shell{
-    grid-template-columns: 240px minmax(0, 1fr) !important;
-    gap: 18px !important;
-    align-items:start;
-  }
-  .app-sidebar{
-    display:block !important;
-    position: sticky;
-    top: 92px;
-    max-height: calc(100vh - 120px);
-    overflow:auto;
-  }
-  .mobile-nav-toggle,
-  .mobile-nav-overlay,
-  .mobile-nav-drawer,
-  #mobileNavToggle,
-  #mobileNavOverlay,
-  #mobileNavDrawer{
-    display:none !important;
-  }
-  #topGearBtn{
-    display:none !important;
-  }
-  #drawerOverlay,
-  .drawerOverlay,
-  .hc-sheet-overlay,
-  #accDetailOverlay.show{
-    display:none !important;
-  }
-  #accountsDrawer{
-    position: fixed !important;
-    top: 86px !important;
-    right: 18px !important;
-    bottom: 18px !important;
-    left: auto !important;
-    width: 340px !important;
-    height: auto !important;
-    max-height: calc(100vh - 104px) !important;
-    transform: none !important;
-    display: flex !important;
-    flex-direction: column !important;
-    border-radius: 20px !important;
-    border: 1px solid rgba(255,255,255,.10) !important;
-    background: rgba(12,14,20,.94) !important;
-    box-shadow: 0 18px 60px rgba(0,0,0,.45) !important;
-    overflow: hidden !important;
-    z-index: 70 !important;
-  }
-  #accountsDrawer .drawerPanel{
-    display:flex;
-    flex-direction:column;
-    min-height:0;
-    height:100%;
-  }
-  #accountsDrawer .drawerHeader,
-  #accountsDrawer .drawerHead{
-    display:flex !important;
-    align-items:center;
-    justify-content:space-between;
-    padding: 14px 14px 10px;
-    border-bottom: 1px solid rgba(255,255,255,.08);
-  }
-  #accountsDrawer .drawerClose,
-  #drawerCloseBtn{
-    display:none !important;
-  }
-  #accountsDrawer .drawerBody{
-    min-height:0;
-    overflow:auto !important;
-    padding: 14px !important;
-  }
-  #accountsDrawer .drawerTabs{
-    margin-top:0 !important;
-  }
-  #accountsDrawer .acct-grid{
-    grid-template-columns: 1fr !important;
-  }
-  #accountsDrawer .btns{
-    position: static !important;
-    top: auto !important;
-    background: transparent !important;
-    border: 0 !important;
-    backdrop-filter:none !important;
-    -webkit-backdrop-filter:none !important;
-    padding: 0 !important;
-    margin-top: 10px !important;
-  }
-  #accountsDrawer input,
-  #accountsDrawer textarea,
-  #accountsDrawer select{
-    font-size: 13px !important;
-  }
-  .row,
-  .row3,
-  .threads-grid-2,
-  .kpi-row,
-  .threads-stat-grid{
-    min-width:0;
-  }
-  .page-title{
-    align-items:flex-start;
-  }
-  .card{
-    min-width:0;
-  }
-}
-
-
-/* ===== Desktop real 3-column fix ===== */
-@media (min-width: 1280px){
-  body.hc-desktop-mode #appContainer{
-    max-width: 1500px !important;
-    padding: 16px 20px 24px !important;
-    margin: 0 auto !important;
-  }
-  body.hc-desktop-mode .topbar{
-    display:block !important;
-  }
-  body.hc-desktop-mode .topbar > .lockbar{
-    margin-bottom: 12px;
-  }
-  body.hc-desktop-mode .app-shell,
-  body.hc-desktop-mode .app-shell.hc-desktop-ready{
-    display:grid !important;
-    grid-template-columns: 220px minmax(0, 1fr) 300px !important;
-    gap: 18px !important;
-    align-items:start !important;
-  }
-  body.hc-desktop-mode .app-sidebar{
-    display:block !important;
-    position: sticky !important;
-    top: 88px !important;
-    width: auto !important;
-    max-height: calc(100vh - 110px) !important;
-    overflow:auto !important;
-  }
-  body.hc-desktop-mode .app-content{
-    min-width:0 !important;
-    width:100% !important;
-  }
-  body.hc-desktop-mode #accountsDrawer{
-    position: sticky !important;
-    top: 88px !important;
-    right: auto !important;
-    left: auto !important;
-    bottom: auto !important;
-    width: 100% !important;
-    max-width: 300px !important;
-    height: auto !important;
-    max-height: calc(100vh - 110px) !important;
-    transform: none !important;
-    display: block !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    border-radius: 20px !important;
-    z-index: 5 !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .drawerPanel{
-    height: 100% !important;
-    max-height: calc(100vh - 110px) !important;
-    display:flex !important;
-    flex-direction:column !important;
-    background: rgba(12,14,20,.94) !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .drawerBody{
-    overflow:auto !important;
-    min-height:0 !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .acct-grid{
-    grid-template-columns: 1fr !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .drawerClose,
-  body.hc-desktop-mode #drawerCloseBtn,
-  body.hc-desktop-mode #topGearBtn,
-  body.hc-desktop-mode .mobile-nav-toggle,
-  body.hc-desktop-mode .mobile-nav-overlay,
-  body.hc-desktop-mode .mobile-nav-drawer,
-  body.hc-desktop-mode #mobileNavToggle,
-  body.hc-desktop-mode #mobileNavOverlay,
-  body.hc-desktop-mode #mobileNavDrawer,
-  body.hc-desktop-mode #drawerOverlay,
-  body.hc-desktop-mode .drawerOverlay,
-  body.hc-desktop-mode .hc-sheet-overlay{
-    display:none !important;
-  }
-  body.hc-desktop-mode .btns{
-    position: static !important;
-    top: auto !important;
-  }
-}
-
-
-/* ===== Desktop roomy layout v4 ===== */
-@media (min-width: 1280px){
-  body.hc-desktop-mode #appContainer{
-    width: min(96vw, 1820px) !important;
-    max-width: none !important;
-    padding: 16px 24px 32px !important;
-    margin: 0 auto !important;
-  }
-  body.hc-desktop-mode .app-shell,
-  body.hc-desktop-mode .app-shell.hc-desktop-ready{
-    grid-template-columns: minmax(210px, 240px) minmax(0, 1.55fr) minmax(290px, 340px) !important;
-    gap: 24px !important;
-  }
-  body.hc-desktop-mode .app-sidebar{
-    top: 86px !important;
-  }
-  body.hc-desktop-mode .app-content,
-  body.hc-desktop-mode .page-section,
-  body.hc-desktop-mode .page,
-  body.hc-desktop-mode #pageMain,
-  body.hc-desktop-mode #pageTelegram{
-    min-width: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-  body.hc-desktop-mode .card,
-  body.hc-desktop-mode .panel,
-  body.hc-desktop-mode .box{
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-  body.hc-desktop-mode .row,
-  body.hc-desktop-mode .formRow,
-  body.hc-desktop-mode .threads-grid-2,
-  body.hc-desktop-mode .kpi-row,
-  body.hc-desktop-mode .threads-stat-grid,
-  body.hc-desktop-mode .row3{
-    width: 100% !important;
-    min-width: 0 !important;
-  }
-  body.hc-desktop-mode .row,
-  body.hc-desktop-mode .formRow,
-  body.hc-desktop-mode .threads-grid-2{
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 16px !important;
-  }
-  body.hc-desktop-mode .row3,
-  body.hc-desktop-mode .threads-stat-grid,
-  body.hc-desktop-mode .kpi-row{
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 16px !important;
-  }
-  body.hc-desktop-mode #sectionDashboard .row3{
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-  body.hc-desktop-mode #accountsDrawer{
-    max-width: 340px !important;
-    width: 100% !important;
-    top: 86px !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .drawerPanel{
-    max-height: calc(100vh - 104px) !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .drawerBody{
-    padding: 12px !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .drawerTabs{
-    gap: 8px !important;
-  }
-  body.hc-desktop-mode #accountsDrawer input,
-  body.hc-desktop-mode #accountsDrawer textarea,
-  body.hc-desktop-mode #accountsDrawer select{
-    font-size: 12px !important;
-    padding: 9px 10px !important;
-  }
-  body.hc-desktop-mode #accountsDrawer label{
-    font-size: 11px !important;
-    margin: 6px 0 4px !important;
-  }
-  body.hc-desktop-mode .btns{
-    gap: 10px !important;
-  }
-}
-
 </style>
 
 <script>
@@ -1527,165 +1233,6 @@ function removeUndefinedFields(obj){
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-
-<style id="hc-v5-pc-tune">
-/* ===== v5: centered roomy layout + no gear bug ===== */
-#topGearBtn{ display:none !important; }
-
-@media (min-width: 1100px){
-  body.hc-desktop-mode #appContainer{
-    width: min(94vw, 1580px) !important;
-    max-width: none !important;
-    padding: 18px 28px 34px !important;
-    margin: 0 auto !important;
-  }
-  body.hc-desktop-mode .topbar > .lockbar{
-    max-width: 1480px;
-    margin: 0 auto 14px !important;
-  }
-  body.hc-desktop-mode .app-shell,
-  body.hc-desktop-mode .app-shell.hc-desktop-ready{
-    grid-template-columns: 190px minmax(760px, 960px) 290px !important;
-    justify-content: center !important;
-    gap: 26px !important;
-    align-items: start !important;
-  }
-  body.hc-desktop-mode .app-sidebar{
-    width: 190px !important;
-    min-width: 190px !important;
-  }
-  body.hc-desktop-mode .app-content{
-    width: min(100%, 960px) !important;
-    max-width: 960px !important;
-    justify-self: center !important;
-  }
-  body.hc-desktop-mode .page-section > .card,
-  body.hc-desktop-mode #sectionX .page.active,
-  body.hc-desktop-mode #sectionTelegram .page,
-  body.hc-desktop-mode #sectionThreads > .card,
-  body.hc-desktop-mode #sectionSettings > .card{
-    width: 100% !important;
-    max-width: 960px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-  body.hc-desktop-mode .row,
-  body.hc-desktop-mode .formRow,
-  body.hc-desktop-mode .threads-grid-2{
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 18px !important;
-  }
-  body.hc-desktop-mode .row3,
-  body.hc-desktop-mode .threads-stat-grid,
-  body.hc-desktop-mode .kpi-row{
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 14px !important;
-  }
-  body.hc-desktop-mode #accountsDrawer{
-    width: 290px !important;
-    min-width: 290px !important;
-    max-width: 290px !important;
-    justify-self: start !important;
-    top: 88px !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .drawerPanel{
-    max-height: calc(100vh - 112px) !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .drawerBody{
-    padding: 12px !important;
-  }
-  body.hc-desktop-mode #accountsDrawer input,
-  body.hc-desktop-mode #accountsDrawer textarea,
-  body.hc-desktop-mode #accountsDrawer select{
-    padding: 8px 10px !important;
-    font-size: 12px !important;
-  }
-  body.hc-desktop-mode #accountsDrawer .btns{
-    gap: 8px !important;
-  }
-}
-
-@media (min-width: 1100px) and (max-width: 1360px){
-  body.hc-desktop-mode #appContainer{ width: min(96vw, 1460px) !important; }
-  body.hc-desktop-mode .app-shell,
-  body.hc-desktop-mode .app-shell.hc-desktop-ready{
-    grid-template-columns: 180px minmax(700px, 860px) 270px !important;
-    gap: 20px !important;
-  }
-  body.hc-desktop-mode .app-content{ max-width: 860px !important; }
-  body.hc-desktop-mode #accountsDrawer{ width: 270px !important; min-width:270px !important; max-width:270px !important; }
-}
-
-/* embedded account panel under X tab on smaller widths */
-body.hc-embed-x #accountsDrawer{
-  position: static !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  height: auto !important;
-  max-height: none !important;
-  transform: none !important;
-  margin-top: 14px !important;
-  border-radius: 18px !important;
-  display: block !important;
-}
-body.hc-embed-x #accountsDrawer .drawerPanel{
-  max-height: none !important;
-}
-body.hc-embed-x #accountsDrawer .drawerBody{
-  max-height: none !important;
-  overflow: visible !important;
-}
-body.hc-embed-x #accountsDrawer .acct-grid{
-  grid-template-columns: 1fr 1fr !important;
-}
-@media (max-width: 860px){
-  body.hc-embed-x #accountsDrawer .acct-grid{
-    grid-template-columns: 1fr !important;
-  }
-}
-body.hc-embed-x #drawerOverlay,
-body.hc-embed-x .drawerOverlay,
-body.hc-embed-x .mobile-nav-toggle,
-body.hc-embed-x #mobileNavToggle,
-body.hc-embed-x #topGearBtn{
-  display:none !important;
-}
-</style>
-
-
-
-<style id="hc-v8-mobile-menu-fix">
-/* v8: keep the mobile menu button visible, and allow the drawer/overlay to actually open */
-@media (max-width: 1099px){
-  body.hc-embed-x .mobile-nav-toggle,
-  body.hc-embed-x #mobileNavToggle{
-    display:block !important;
-  }
-  body.hc-embed-x .mobile-nav-overlay,
-  body.hc-embed-x #mobileNavOverlay{
-    display:none !important;
-  }
-  body.hc-embed-x .mobile-nav-overlay.show,
-  body.hc-embed-x #mobileNavOverlay.show{
-    display:block !important;
-  }
-  body.hc-embed-x .mobile-nav-drawer,
-  body.hc-embed-x #mobileNavDrawer{
-    display:block !important;
-    transform: translateX(-105%);
-    visibility: hidden;
-    pointer-events: none;
-  }
-  body.hc-embed-x .mobile-nav-drawer.show,
-  body.hc-embed-x #mobileNavDrawer.show{
-    transform: translateX(0) !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-  }
-}
-</style>
-
 </head>
 
 <body>
@@ -5469,732 +5016,134 @@ wrapper.appendChild(account);
 </script>
 
 
-<script>
-(function(){
-  function desktopFix(){
-    if(window.innerWidth < 1280) return;
-    var drawer = document.getElementById('accountsDrawer');
-    if(drawer){
-      drawer.classList.add('show');
-      drawer.classList.add('open');
-      drawer.setAttribute('aria-hidden','false');
-    }
-    var overlay = document.getElementById('drawerOverlay');
-    if(overlay) overlay.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-  window.addEventListener('resize', desktopFix);
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', desktopFix);
-  else desktopFix();
-})();
-</script>
-
-
-<script>
-(function(){
-  function applyDesktopLayout(){
-    var desktop = window.innerWidth >= 1280;
-    document.body.classList.toggle('hc-desktop-mode', desktop);
-    var shell = document.querySelector('.app-shell');
-    var drawer = document.getElementById('accountsDrawer');
-    var appContent = document.querySelector('.app-content');
-    var appSidebar = document.querySelector('.app-sidebar');
-    var mobileDrawer = document.getElementById('mobileNavDrawer');
-    var mobileOverlay = document.getElementById('mobileNavOverlay');
-    if(mobileDrawer){ mobileDrawer.classList.remove('show'); }
-    if(mobileOverlay){ mobileOverlay.classList.remove('show'); }
-    if(desktop && shell && drawer && appContent){
-      shell.classList.add('hc-desktop-ready');
-      if(drawer.parentElement !== shell){
-        shell.appendChild(drawer);
-      }
-      drawer.classList.add('show','open');
-      drawer.setAttribute('aria-hidden','false');
-      document.body.style.overflow = '';
-    } else if(shell) {
-      shell.classList.remove('hc-desktop-ready');
-    }
-    if(appSidebar){
-      appSidebar.style.display = desktop ? 'block' : '';
-    }
-  }
-  window.addEventListener('resize', applyDesktopLayout);
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyDesktopLayout);
-  else applyDesktopLayout();
-})();
-</script>
-
-
-<script id="hc-v5-layout-script">
-(function(){
-  var shell = null;
-  var drawer = null;
-  var xSection = null;
-  var xPage = null;
-  var mobileDrawerHost = null;
-  var desktopHost = null;
-
-  function closeLegacyDrawers(){
-    document.getElementById('mobileNavDrawer')?.classList.remove('show');
-    document.getElementById('mobileNavOverlay')?.classList.remove('show');
-    document.getElementById('accountsDrawer')?.classList.remove('show');
-    document.getElementById('accountsDrawer')?.classList.remove('open');
-    document.getElementById('drawerOverlay')?.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-
-  function ensureHosts(){
-    shell = shell || document.querySelector('.app-shell');
-    drawer = drawer || document.getElementById('accountsDrawer');
-    xSection = xSection || document.getElementById('sectionX');
-    xPage = xPage || document.getElementById('pageMain') || xSection;
-    if(shell && !desktopHost){
-      desktopHost = document.createElement('div');
-      desktopHost.id = 'hcDesktopDrawerHost';
-      desktopHost.style.display = 'contents';
-    }
-    if(xSection && !mobileDrawerHost){
-      mobileDrawerHost = document.createElement('div');
-      mobileDrawerHost.id = 'hcXDrawerHost';
-      mobileDrawerHost.style.width = '100%';
-      mobileDrawerHost.style.display = 'block';
-    }
-    if(shell && desktopHost && !desktopHost.parentElement){
-      shell.appendChild(desktopHost);
-    }
-    if(xSection && mobileDrawerHost && !mobileDrawerHost.parentElement){
-      xSection.appendChild(mobileDrawerHost);
-    }
-  }
-
-  function activeSectionId(){
-    var active = document.querySelector('.page-section.active');
-    return active ? active.id : 'sectionDashboard';
-  }
-
-  function syncDrawerPlacement(){
-    ensureHosts();
-    if(!drawer || !shell) return;
-    var wide = window.innerWidth >= 1100;
-    document.body.classList.toggle('hc-desktop-mode', wide);
-    document.body.classList.toggle('hc-embed-x', !wide);
-    if(wide){
-      if(drawer.parentElement !== shell){
-        shell.appendChild(drawer);
-      }
-      drawer.classList.add('show','open');
-      drawer.setAttribute('aria-hidden','false');
-      drawer.style.display = 'block';
-    }else{
-      var sectionId = activeSectionId();
-      if(sectionId === 'sectionX'){
-        if(drawer.parentElement !== mobileDrawerHost){
-          mobileDrawerHost.appendChild(drawer);
-        }
-        drawer.classList.add('show','open');
-        drawer.setAttribute('aria-hidden','false');
-        drawer.style.display = 'block';
-      }else{
-        if(drawer.parentElement !== mobileDrawerHost){
-          mobileDrawerHost.appendChild(drawer);
-        }
-        drawer.classList.remove('show','open');
-        drawer.setAttribute('aria-hidden','true');
-        drawer.style.display = 'none';
-      }
-    }
-    closeLegacyDrawers();
-  }
-
-  function patchSectionSwitch(){
-    document.querySelectorAll('.app-navbtn').forEach(function(btn){
-      if(btn.dataset.hcV5Bound) return;
-      btn.dataset.hcV5Bound = '1';
-      btn.addEventListener('click', function(){
-        setTimeout(syncDrawerPlacement, 0);
-      });
-    });
-  }
-
-  window.addEventListener('resize', syncDrawerPlacement);
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){
-      patchSectionSwitch();
-      syncDrawerPlacement();
-    });
-  }else{
-    patchSectionSwitch();
-    syncDrawerPlacement();
-  }
-  setTimeout(syncDrawerPlacement, 200);
-})();
-</script>
-
-
-<style id="hc-v6-final-layout">
-/* ===== v6: remove gear / integrate X account panel into X tab / mobile post settings fix ===== */
-#topGearBtn,
-#drawerOverlay,
-.drawerOverlay,
-#accountsDrawer .drawerClose,
-#drawerCloseBtn,
-#accountsDrawer .drawerHeader,
-#accountsDrawer .drawerHead{
-  display:none !important;
-}
-
-/* Keep account panel only inside X tab layout */
-#accountsDrawer{
-  position: static !important;
-  inset: auto !important;
-  transform: none !important;
-  width: 100% !important;
-  max-width: none !important;
-  height: auto !important;
-  max-height: none !important;
-  margin: 0 !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
-}
-#accountsDrawer .drawerPanel{
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-  border-radius: 22px !important;
-  background: rgba(10,14,24,.55) !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  box-shadow: 0 16px 44px rgba(0,0,0,.28) !important;
-}
-#accountsDrawer .drawerBody{
-  overflow: visible !important;
-  max-height: none !important;
-  padding: 14px !important;
-}
-#accountsDrawer.show,
-#accountsDrawer.open{
-  transform:none !important;
-}
-#accountsDrawer .drawerTabs{
-  margin-top: 0 !important;
-  margin-bottom: 14px !important;
-}
-#accountsDrawer .btns{
-  position: static !important;
-  top: auto !important;
-  padding: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
-}
-#accountsDrawer .btns button,
-#accountsDrawer .btns a{
-  flex: 1 1 auto;
-}
-
-#hcXAccountMount{
-  width: 100%;
-}
-body.hc-x-account-mode #sectionX .page-title{
-  max-width: 1320px;
-  margin: 0 auto 14px !important;
-}
-body.hc-x-account-mode #sectionX .page-title > div{
-  max-width: 860px;
-}
-body.hc-x-account-mode #sectionX .card,
-body.hc-x-account-mode #sectionX .page{
-  min-width: 0;
-}
-body.hc-x-account-mode #sectionX .row,
-body.hc-x-account-mode #sectionX .formRow,
-body.hc-x-account-mode #sectionX .threads-grid-2{
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 16px !important;
-}
-body.hc-x-account-mode #sectionX .row3,
-body.hc-x-account-mode #sectionX .threads-stat-grid,
-body.hc-x-account-mode #sectionX .kpi-row{
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 14px !important;
-}
-body.hc-x-account-mode #sectionX .acct-grid{
-  grid-template-columns: 1fr !important;
-}
-body.hc-x-account-mode #sectionX .drawerTabPanel.active{
-  display:block !important;
-}
-
-#hcXLayoutWrap{
-  width: min(1320px, calc(100vw - 64px));
-  margin: 0 auto 18px;
-  display: grid;
-  grid-template-columns: minmax(0, 880px) 340px;
-  justify-content: center;
-  align-items: start;
-  gap: 24px;
-}
-#hcXMainCol,
-#hcXSideCol{
-  min-width: 0;
-}
-#hcXMainCol > .page,
-#hcXMainCol > .card,
-#hcXMainCol > div{
-  width: 100% !important;
-  max-width: none !important;
-}
-#hcXMainCol #pageMain .row{
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px) !important;
-  gap: 16px !important;
-}
-#hcXMainCol #pageMain .card{
-  width: 100% !important;
-}
-#hcXMainCol #pageMain .outCard,
-#hcXMainCol #pageMain .out,
-#hcXMainCol #output{
-  width: 100%;
-}
-#hcXSideCol{
-  align-self: start;
-}
-
-/* make central content breathe instead of stretching edge-to-edge */
-body.hc-desktop-mode #sectionDashboard > .card,
-body.hc-desktop-mode #sectionThreads > .card,
-body.hc-desktop-mode #sectionSettings > .card{
-  max-width: 1180px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
-/* Post settings modal actual classes */
-#postSettingsModal{
-  position: fixed !important;
-  inset: 0 !important;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  background: rgba(0,0,0,.72) !important;
-  backdrop-filter: blur(12px) saturate(1.08);
-  -webkit-backdrop-filter: blur(12px) saturate(1.08);
-  z-index: 999999 !important;
-}
-#postSettingsModal.show{
-  display: flex !important;
-}
-#postSettingsModal .hc-modal{
-  width: min(920px, calc(100vw - 24px));
-  max-width: 920px;
-  max-height: min(88vh, 860px);
-  height: auto;
-  margin: 0 !important;
-  display: flex;
-  flex-direction: column;
-}
-#postSettingsModal .hc-modal-head{
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: rgba(10,14,20,.96);
-}
-#postSettingsModal .hc-modal-body{
-  flex: 1 1 auto;
-  overflow: auto !important;
-  max-height: calc(min(88vh, 860px) - 118px);
-  padding-bottom: 22px !important;
-}
-#postSettingsModal .hc-modal-foot{
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  background: rgba(10,14,20,.96);
-}
-#postSettingsModal .btns{
-  position: static !important;
-  top: auto !important;
-}
-
-@media (max-width: 1279px){
-  #hcXLayoutWrap{
-    width: min(1180px, calc(100vw - 44px));
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 20px;
-  }
-  #hcXMainCol #pageMain .row{
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 1099px){
-  body.hc-x-account-mode #sectionX .page-title,
-  #hcXLayoutWrap{
-    width: min(100%, calc(100vw - 24px));
-  }
-  #hcXLayoutWrap{
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  #hcXMainCol #pageMain .row,
-  body.hc-x-account-mode #sectionX .row,
-  body.hc-x-account-mode #sectionX .formRow,
-  body.hc-x-account-mode #sectionX .threads-grid-2,
-  body.hc-x-account-mode #sectionX .row3,
-  body.hc-x-account-mode #sectionX .threads-stat-grid,
-  body.hc-x-account-mode #sectionX .kpi-row{
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 700px){
-  #postSettingsModal{
-    align-items: flex-end;
-    justify-content: center;
-    padding: 0;
-  }
-  #postSettingsModal .hc-modal{
-    width: 100vw !important;
-    max-width: none !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    border-radius: 20px 20px 0 0 !important;
-  }
-  #postSettingsModal .hc-modal-body{
-    max-height: none !important;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-  }
-  #postSettingsModal .hc-modal-foot{
-    padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-  }
-  #postSettingsModal .btns button{
-    flex: 1 1 calc(50% - 10px);
-  }
-}
-</style>
-
-<script id="hc-v6-final-layout-script">
-(function(){
-  function closeLegacy(){
-    document.getElementById('accountsDrawer')?.classList.remove('show','open');
-    document.getElementById('drawerOverlay')?.classList.remove('show');
-    document.getElementById('mobileNavDrawer')?.classList.remove('show');
-    document.getElementById('mobileNavOverlay')?.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-
-  function ensureXLayout(){
-    var body = document.body;
-    var sectionX = document.getElementById('sectionX');
-    var pageMain = document.getElementById('pageMain');
-    var drawer = document.getElementById('accountsDrawer');
-    if(!sectionX || !pageMain || !drawer) return;
-
-    body.classList.add('hc-x-account-mode');
-
-    var title = sectionX.querySelector('.page-title');
-    var wrap = document.getElementById('hcXLayoutWrap');
-    var mainCol = document.getElementById('hcXMainCol');
-    var sideCol = document.getElementById('hcXSideCol');
-    if(!wrap){
-      wrap = document.createElement('div');
-      wrap.id = 'hcXLayoutWrap';
-      mainCol = document.createElement('div');
-      mainCol.id = 'hcXMainCol';
-      sideCol = document.createElement('div');
-      sideCol.id = 'hcXSideCol';
-      wrap.appendChild(mainCol);
-      wrap.appendChild(sideCol);
-      if(title && title.nextSibling) sectionX.insertBefore(wrap, title.nextSibling);
-      else sectionX.appendChild(wrap);
-    } else {
-      mainCol = mainCol || document.getElementById('hcXMainCol');
-      sideCol = sideCol || document.getElementById('hcXSideCol');
-    }
-
-    if(mainCol && pageMain.parentElement !== mainCol){ mainCol.appendChild(pageMain); }
-    if(sideCol && drawer.parentElement !== sideCol){ sideCol.appendChild(drawer); }
-
-    drawer.style.display = 'block';
-    drawer.setAttribute('aria-hidden','false');
-    drawer.classList.remove('show','open');
-
-    var gear = document.getElementById('topGearBtn');
-    if(gear){
-      gear.style.display = 'none';
-      gear.setAttribute('hidden','hidden');
-      gear.onclick = null;
-    }
-
-    closeLegacy();
-  }
-
-  function keepDrawerInsideX(){
-    ensureXLayout();
-    var drawer = document.getElementById('accountsDrawer');
-    var sideCol = document.getElementById('hcXSideCol');
-    if(drawer && sideCol && drawer.parentElement !== sideCol){
-      sideCol.appendChild(drawer);
-    }
-    drawer?.classList.remove('show','open');
-    drawer?.style.setProperty('display','block','important');
-  }
-
-  function hookNav(){
-    document.querySelectorAll('.app-navbtn').forEach(function(btn){
-      if(btn.dataset.hcV6Bound) return;
-      btn.dataset.hcV6Bound = '1';
-      btn.addEventListener('click', function(){
-        setTimeout(keepDrawerInsideX, 0);
-      });
-    });
-  }
-
-  function fixPostSettingsButtons(){
-    var btns = document.querySelectorAll('#pageMain > .row .card:nth-child(2) > .btns, #postSettingsModal .btns');
-    btns.forEach(function(el){
-      el.style.position = 'static';
-      el.style.top = 'auto';
-    });
-  }
-
-  window.addEventListener('resize', function(){
-    keepDrawerInsideX();
-    fixPostSettingsButtons();
-  });
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){
-      hookNav();
-      keepDrawerInsideX();
-      fixPostSettingsButtons();
-    });
-  }else{
-    hookNav();
-    keepDrawerInsideX();
-    fixPostSettingsButtons();
-  }
-
-  setTimeout(function(){
-    keepDrawerInsideX();
-    fixPostSettingsButtons();
-  }, 120);
-})();
-</script>
-
-
-<script id="hc-v8-mobile-menu-script">
-(function(){
-  function bindMobileMenu(){
-    var toggle = document.getElementById('mobileNavToggle');
-    var overlay = document.getElementById('mobileNavOverlay');
-    var drawer = document.getElementById('mobileNavDrawer');
-    var closeBtn = document.getElementById('mobileNavClose');
-    if(!toggle || !overlay || !drawer || toggle.dataset.hcV8Bound) return;
-
-    function openMenu(){
-      overlay.classList.add('show');
-      drawer.classList.add('show');
-      drawer.setAttribute('aria-hidden','false');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeMenu(){
-      overlay.classList.remove('show');
-      drawer.classList.remove('show');
-      drawer.setAttribute('aria-hidden','true');
-      document.body.style.overflow = '';
-    }
-
-    toggle.dataset.hcV8Bound = '1';
-    toggle.addEventListener('click', function(e){ e.preventDefault(); openMenu(); }, {passive:false});
-    toggle.addEventListener('touchend', function(e){ e.preventDefault(); openMenu(); }, {passive:false});
-    overlay.addEventListener('click', closeMenu);
-    closeBtn && closeBtn.addEventListener('click', closeMenu);
-    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeMenu(); });
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', bindMobileMenu);
-  } else {
-    bindMobileMenu();
-  }
-  setTimeout(bindMobileMenu, 150);
-})();
-</script>
-
-
-<style id="hc-v9-x-tabs-style">
-/* ===== v9: X section tabs ===== */
-#sectionX #hcXLayoutWrap{
-  display:block !important;
-  max-width:1280px;
-  margin:0 auto;
-}
-#sectionX #hcXMainCol,
-#sectionX #hcXSideCol{
-  width:100%;
-}
-#sectionX #hcXSideCol{display:none !important;}
-#sectionX .hc-x-tabs-wrap{
-  max-width:1280px;
-  margin:0 auto;
-  display:grid;
-  gap:16px;
-}
-#sectionX .hc-x-tabbar{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
+<style id="hc-x-tabs-hotfix">
+#sectionX .hc-x-tabs-wrap{display:grid;gap:14px;margin-top:14px}
+#sectionX .hc-x-tabbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 #sectionX .hc-x-tabbtn{
-  padding:11px 16px;
-  border-radius:999px;
+  padding:11px 16px;border-radius:999px;
   border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.08);
-  color:rgba(255,255,255,.92);
-  font-weight:800;
-  letter-spacing:.02em;
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.92);
+  font-weight:800
 }
 #sectionX .hc-x-tabbtn.active{
-  background:linear-gradient(135deg, rgba(0,229,255,.20), rgba(180,0,255,.18));
+  background:linear-gradient(135deg, rgba(0,229,255,.22), rgba(180,0,255,.18));
   border-color:rgba(0,229,255,.28);
-  box-shadow:0 0 24px rgba(0,229,255,.12);
+  box-shadow:0 0 24px rgba(0,229,255,.12)
 }
-#sectionX .hc-x-panel{display:none; min-width:0;}
-#sectionX .hc-x-panel.active{display:block;}
-#sectionX .hc-x-panel > *:first-child{margin-top:0 !important;}
-#sectionX .hc-x-grid{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 360px;
-  gap:16px;
-  align-items:start;
+#sectionX .hc-x-panel{display:none}
+#sectionX .hc-x-panel.active{display:block}
+#sectionX .hc-x-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+@media (min-width: 1100px){
+  #sectionX .hc-x-grid{grid-template-columns:minmax(0,1fr) 320px;align-items:start}
 }
-#sectionX .hc-x-grid .hc-x-mainstack{min-width:0; display:grid; gap:16px;}
-#sectionX .hc-x-grid .hc-x-side{min-width:0;}
-#sectionX #accountsDrawer,
-#sectionX #accountsDrawer .drawerPanel{
-  width:100% !important;
-  max-width:none !important;
-}
-#sectionX #accountsDrawer .drawerTabs{display:none !important;}
-#sectionX #drawerTab_lic{display:none !important;}
-#sectionX .hc-x-license-card .panelActions{margin-top:12px;}
-#sectionX .hc-x-license-card .btn{padding:12px 14px; border-radius:14px;}
-@media (max-width: 1100px){
-  #sectionX .hc-x-grid{grid-template-columns:1fr;}
-}
-@media (max-width: 720px){
-  #sectionX .hc-x-tabbar{
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    padding-bottom:2px;
-    -webkit-overflow-scrolling:touch;
-  }
-  #sectionX .hc-x-tabbtn{flex:0 0 auto; white-space:nowrap;}
+#sectionX .hc-x-license-card .panelActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+@media (max-width:720px){
+  #sectionX .hc-x-tabbar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  #sectionX .hc-x-tabbtn{flex:0 0 auto;white-space:nowrap}
 }
 </style>
-
-<script id="hc-v9-x-tabs-script">
+<script id="hc-x-tabs-hotfix-script">
 (function(){
-  function buildXTabs(){
+  function ensureXTabs(){
     var sectionX = document.getElementById('sectionX');
     var pageMain = document.getElementById('pageMain');
     var drawer = document.getElementById('accountsDrawer');
     if(!sectionX || !pageMain || !drawer) return;
 
-    var wrap = document.getElementById('hcXLayoutWrap') || sectionX;
-    var title = sectionX.querySelector('.page-title');
-    if(!title) return;
-
-    var autoInput = document.getElementById('xAutoPostTitle');
-    var autoCard = autoInput ? autoInput.closest('.card') : null;
     var existing = document.getElementById('hcXTabSystem');
     if(!existing){
       existing = document.createElement('div');
       existing.id = 'hcXTabSystem';
       existing.className = 'hc-x-tabs-wrap';
-      existing.innerHTML = [
-        '<div class="hc-x-tabbar" role="tablist" aria-label="Xタブ">',
-        '  <button class="hc-x-tabbtn active" type="button" data-xtab="compose">投稿作成</button>',
-        '  <button class="hc-x-tabbtn" type="button" data-xtab="autopost">自動ポスト</button>',
-        '  <button class="hc-x-tabbtn" type="button" data-xtab="account">アカウント</button>',
-        '  <button class="hc-x-tabbtn" type="button" data-xtab="license">ライセンス</button>',
-        '</div>',
-        '<div class="hc-x-panel active" id="hcXTab_compose"></div>',
-        '<div class="hc-x-panel" id="hcXTab_autopost"></div>',
-        '<div class="hc-x-panel" id="hcXTab_account"></div>',
-        '<div class="hc-x-panel" id="hcXTab_license"></div>'
-      ].join('');
-      if(title.nextSibling) wrap.insertBefore(existing, title.nextSibling); else wrap.appendChild(existing);
+      existing.innerHTML = ''
+        + '<div class="hc-x-tabbar" role="tablist" aria-label="Xタブ">'
+        + '  <button class="hc-x-tabbtn active" type="button" data-xtab="compose">投稿作成</button>'
+        + '  <button class="hc-x-tabbtn" type="button" data-xtab="autopost">自動ポスト</button>'
+        + '  <button class="hc-x-tabbtn" type="button" data-xtab="account">アカウント</button>'
+        + '  <button class="hc-x-tabbtn" type="button" data-xtab="license">ライセンス</button>'
+        + '</div>'
+        + '<div class="hc-x-panel active" id="hcXTab_compose"></div>'
+        + '<div class="hc-x-panel" id="hcXTab_autopost"></div>'
+        + '<div class="hc-x-panel" id="hcXTab_account"></div>'
+        + '<div class="hc-x-panel" id="hcXTab_license"></div>';
+
+      var title = sectionX.querySelector('.page-title');
+      if(title && title.nextSibling){
+        title.parentNode.insertBefore(existing, title.nextSibling);
+      }else{
+        sectionX.appendChild(existing);
+      }
     }
 
     var compose = document.getElementById('hcXTab_compose');
     var autopost = document.getElementById('hcXTab_autopost');
     var account = document.getElementById('hcXTab_account');
     var license = document.getElementById('hcXTab_license');
+    if(!compose || !autopost || !account || !license) return;
 
     if(pageMain.parentElement !== compose){ compose.appendChild(pageMain); }
+
+    var autoCard = document.getElementById('xAutoPostTitle');
+    autoCard = autoCard ? autoCard.closest('.card') : null;
     if(autoCard && autoCard.parentElement !== autopost){ autopost.appendChild(autoCard); }
 
+    var drawerPanel = drawer.querySelector('.drawerPanel') || drawer.firstElementChild || drawer;
     if(!document.getElementById('hcXAccountGrid')){
       var grid = document.createElement('div');
       grid.id = 'hcXAccountGrid';
       grid.className = 'hc-x-grid';
-      var main = document.createElement('div');
-      main.className = 'hc-x-mainstack';
-      var side = document.createElement('div');
-      side.className = 'hc-x-side';
       account.appendChild(grid);
-      grid.appendChild(main);
-      grid.appendChild(side);
-    }
-    var grid = document.getElementById('hcXAccountGrid');
-    var main = grid.querySelector('.hc-x-mainstack');
-    var side = grid.querySelector('.hc-x-side');
-    if(pageMain.parentElement !== main){ main.appendChild(pageMain); }
-    if(drawer.parentElement !== side){ side.appendChild(drawer); }
-    drawer.style.display='block';
-    drawer.setAttribute('aria-hidden','false');
-    drawer.classList.remove('show','open');
+      grid.appendChild(drawer);
 
-    if(!document.getElementById('hcXLicenseCard')){
-      var card = document.createElement('div');
-      card.id = 'hcXLicenseCard';
-      card.className = 'card hc-x-license-card';
-      card.innerHTML = '<div style="font-weight:800; margin-bottom:8px;">ライセンス</div>'+
-        '<div class="muted">情報確認や再認証をここから行えます。</div>'+
-        '<div class="panelActions">'+
-        '  <button type="button" class="btn primary" id="hcXOpenInfoBtn">情報を開く</button>'+
-        '  <button type="button" class="btn secondary" id="hcXReauthBtn">ライセンス再認証</button>'+
-        '</div>';
-      license.appendChild(card);
+      var licCard = document.createElement('div');
+      licCard.className = 'card hc-x-license-card';
+      licCard.innerHTML = ''
+        + '<div style="font-weight:800;margin-bottom:8px;">ライセンス</div>'
+        + '<div class="muted">情報確認と再認証をここから行えます。</div>'
+        + '<div class="panelActions">'
+        + '  <button type="button" class="btn primary" id="hcXOpenInfoBtn">情報を開く</button>'
+        + '  <button type="button" class="btn secondary" id="hcXReauthBtn">ライセンス再認証</button>'
+        + '</div>';
+      license.appendChild(licCard);
+    } else {
+      var grid2 = document.getElementById('hcXAccountGrid');
+      if(drawer.parentElement !== grid2){ grid2.appendChild(drawer); }
     }
 
-    existing.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
+    drawer.style.display = 'block';
+    drawer.style.position = 'static';
+    drawer.style.transform = 'none';
+    drawer.style.width = '100%';
+    drawer.style.maxWidth = '100%';
+    drawer.style.height = 'auto';
+    drawer.style.maxHeight = 'none';
+    var ov = document.getElementById('drawerOverlay');
+    if(ov) ov.style.display = 'none';
+
+    var tabs = existing.querySelectorAll('.hc-x-tabbtn');
+    tabs.forEach(function(btn){
       if(btn.dataset.bound) return;
-      btn.dataset.bound='1';
+      btn.dataset.bound = '1';
       btn.addEventListener('click', function(){
         var name = btn.getAttribute('data-xtab');
-        existing.querySelectorAll('.hc-x-tabbtn').forEach(function(b){ b.classList.toggle('active', b===btn); });
-        existing.querySelectorAll('.hc-x-panel').forEach(function(p){ p.classList.toggle('active', p.id === 'hcXTab_' + name); });
+        tabs.forEach(function(b){ b.classList.toggle('active', b === btn); });
+        existing.querySelectorAll('.hc-x-panel').forEach(function(p){
+          p.classList.toggle('active', p.id === 'hcXTab_' + name);
+        });
       });
     });
 
     var infoBtn = document.getElementById('hcXOpenInfoBtn');
     if(infoBtn && !infoBtn.dataset.bound){
-      infoBtn.dataset.bound='1';
+      infoBtn.dataset.bound = '1';
       infoBtn.addEventListener('click', function(){
-        var src = document.getElementById('openInfoFromDrawer');
+        var src = document.getElementById('openInfoFromDrawer') || document.querySelector('[data-hc-info]');
         if(src) src.click();
       });
     }
     var reauthBtn = document.getElementById('hcXReauthBtn');
     if(reauthBtn && !reauthBtn.dataset.bound){
-      reauthBtn.dataset.bound='1';
+      reauthBtn.dataset.bound = '1';
       reauthBtn.addEventListener('click', function(){
         var src = document.getElementById('reauthFromDrawer');
         if(src) src.click();
@@ -6202,9 +5151,19 @@ body.hc-desktop-mode #sectionSettings > .card{
     }
   }
 
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildXTabs);
-  else buildXTabs();
-  setTimeout(buildXTabs, 120);
+  window.ensureXTabs = ensureXTabs;
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', ensureXTabs);
+  }else{
+    ensureXTabs();
+  }
+  window.addEventListener('load', ensureXTabs);
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('[data-section="sectionX"]') : null;
+    if(btn) setTimeout(ensureXTabs, 50);
+  }, true);
+  setTimeout(ensureXTabs, 200);
+  setTimeout(ensureXTabs, 800);
 })();
 </script>
 
