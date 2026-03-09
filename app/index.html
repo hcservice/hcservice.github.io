@@ -1,1 +1,5288 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SNS Hyper Core</title>
 
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; margin: 16px; line-height: 1.4; }
+    .tabbtn { border:1px solid #ddd; background:#fff; color:#111; border-radius:999px; padding:8px 12px; cursor:pointer; }
+.tabbtn.active { border-color:#111; background:#111; color:#fff; }
+    select { background:#fff; color:#111; }
+    h1 { font-size: 18px; margin: 0 0 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
+    label { display:block; font-size: 12px; color:#555; margin: 8px 0 6px; }
+    textarea, input, select { width:100%; box-sizing: border-box; padding: 10px; border:1px solid #ccc; border-radius: 8px; font-size: 14px; }
+    textarea { min-height: 140px; resize: vertical; }
+    button { padding: 10px 12px; border: 1px solid #111; border-radius: 10px; background:#111; color:#fff; font-size: 14px; cursor:pointer; }
+    button.secondary { background:#fff; color:#111; }
+    .btns { display:flex; gap:10px; flex-wrap: wrap; margin-top: 10px; }
+    .muted { color:#666; font-size: 12px; }
+    .out { margin-top: 12px; display: grid; gap: 10px; }
+    .item { border:1px solid #eee; border-radius: 10px; padding: 10px; }
+    .item pre { white-space: pre-wrap; margin: 0; font-size: 14px; }
+    .topbar { display:flex; justify-content: space-between; align-items: center; gap:10px; margin-bottom: 10px; flex-wrap: wrap; }
+    .pill { font-size: 12px; padding: 4px 8px; border-radius: 999px; border:1px solid #ddd; color:#444; }
+    @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
+  
+    /* --- License gate --- */
+    .lockbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .lockbar button { padding: 6px 10px; border-radius: 999px; font-size: 12px; }
+    .locked .card, .locked .out { opacity: .45; pointer-events: none; }
+    .locked .lockbar, .locked #licenseModal { pointer-events: auto; opacity: 1; }
+
+    #licenseModal { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,.55); z-index: 9999; padding: 16px; }
+    #licenseModal .box { width: min(520px, 100%); background: #fff; border-radius: 14px; padding: 14px; border: 1px solid #ddd; }
+    #licenseModal .box h3 { margin: 0 0 8px; font-size: 16px; }
+    #licenseModal .box .muted { margin-top: 6px; }
+    #licenseModal .row { display:flex; gap:10px; }
+
+  
+    /* License gate */
+    #licenseGate{
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background:
+        radial-gradient(900px 600px at 20% 0%, rgba(180,0,255,.25), transparent 60%),
+        radial-gradient(900px 600px at 100% 10%, rgba(0,229,255,.18), transparent 55%),
+        radial-gradient(900px 700px at 30% 110%, rgba(0,255,133,.12), transparent 55%),
+        var(--bg0);
+      z-index: 9999;
+    }
+    #licenseGate .gateBox{
+      width: min(560px, 100%);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 18px;
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      box-shadow: 0 20px 60px rgba(0,0,0,.35), 0 0 0 1px rgba(0,229,255,.08) inset;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Tabs */
+    .tabs { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin: 8px 0 12px; }
+    .tabbtn { border:1px solid #ddd; background:#fff; border-radius:999px; padding:8px 12px; cursor:pointer; }
+    .tabbtn.active { border-color:#333; }
+    .page { display:none; }
+    .page.active { display:block; }
+
+    /* Sticky action bar (main page) */
+    .stickybar { position: fixed; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.96); border-top:1px solid #ddd;
+                 padding: 10px 12px; display:none; z-index: 50; }
+    .stickybar .inner { max-width: 1100px; margin: 0 auto; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+    body.hasSticky { padding-bottom: 74px; }
+
+    /* Accounts table */
+    .acct-grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .acct-table { width:100%; border-collapse: collapse; }
+    .acct-table th, .acct-table td { border-bottom:1px solid #eee; padding:8px; text-align:left; vertical-align: top; }
+    .acct-table td small { color:#666; }
+    .danger { border-color:#c00 !important; color:#c00; }
+
+  
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 900px) { .row3 { grid-template-columns: 1fr; } }
+    .meta { font-size: 12px; color: #666; margin-top: 6px; display:flex; gap:10px; flex-wrap:wrap; }
+    .badge { display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; background:#fff; }
+    .badge.bad { border-color:#f2b8b8; background:#fff5f5; }
+
+/* --- Unlock / Lock animation --- */
+#licenseGate, #appContainer{
+  transition: opacity .25s ease, transform .25s ease;
+  will-change: opacity, transform;
+}
+.fade-in{
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+.fade-out{
+  opacity: 0 !important;
+  transform: translateY(8px) !important;
+}
+
+
+/* ==== Safe visibility rules ==== */
+body.locked #licenseGate { display:flex; }
+body.locked #appContainer { display:none; }
+body:not(.locked) #licenseGate { display:none; }
+body:not(.locked) #appContainer { display:block; }
+
+
+/* ===== Mobile Safe UI Improvements ===== */
+
+/* iPhone safe area (notch) */
+:root {
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+body {
+  padding-top: calc(12px + var(--safe-top));
+  padding-bottom: calc(12px + var(--safe-bottom));
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+/* Improve input visibility (dark friendly) */
+input, textarea, select {
+  background: rgba(255,255,255,.10);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 12px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255,255,255,.55);
+}
+
+/* Prevent iOS autofill white flash */
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Slightly larger touch targets */
+input, select {
+  min-height: 44px;
+}
+
+textarea {
+  min-height: 120px;
+}
+
+label {
+  color: rgba(255,255,255,.85);
+}
+
+
+/* ===== Cyber / Neon Luxury UI (CSS only) ===== */
+:root{
+  --neon1: #00e5ff;
+  --neon2: #b400ff;
+  --neon3: #00ff85;
+  --bg0: #070A12;
+  --bg1: rgba(255,255,255,.06);
+  --bg2: rgba(255,255,255,.10);
+  --stroke: rgba(255,255,255,.14);
+  --stroke2: rgba(255,255,255,.22);
+  --text0: rgba(255,255,255,.92);
+  --text1: rgba(255,255,255,.72);
+}
+
+html, body{
+  background: radial-gradient(1200px 700px at 10% -10%, rgba(180,0,255,.25), transparent 60%),
+              radial-gradient(900px 600px at 100% 0%, rgba(0,229,255,.18), transparent 58%),
+              radial-gradient(900px 700px at 30% 110%, rgba(0,255,133,.12), transparent 55%),
+              var(--bg0) !important;
+  color: var(--text0);
+}
+
+/* Global typography smoothing */
+*{ -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* Subtle grid overlay */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events:none;
+  opacity:.45;
+  mask-image: radial-gradient(closest-side at 50% 20%, black 0%, transparent 70%);
+}
+
+/* Headings */
+h1, h2, h3{
+  letter-spacing:.02em;
+}
+h1{
+  text-shadow: 0 0 18px rgba(0,229,255,.25), 0 0 24px rgba(180,0,255,.18);
+}
+
+/* Pill style */
+.pill{
+  background: linear-gradient(135deg, rgba(0,229,255,.14), rgba(180,0,255,.10));
+  border: 1px solid rgba(255,255,255,.16);
+  color: var(--text0);
+  box-shadow: 0 0 0 1px rgba(0,229,255,.08) inset, 0 0 18px rgba(0,229,255,.08);
+}
+
+/* Cards */
+.card, .panel, .box{
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 16px;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.35),
+    0 0 0 1px rgba(0,229,255,.06) inset,
+    0 0 24px rgba(180,0,255,.06);
+  backdrop-filter: blur(10px);
+}
+
+/* Buttons - unify */
+/* --- Policy links as pills (Legal/Policy) --- */
+.btns a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none !important;
+  padding:10px 14px;
+  border-radius:999px;
+  font-weight:900;
+  letter-spacing:.02em;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  color: var(--text0);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.25),
+    0 0 0 1px rgba(0,229,255,.06) inset;
+  transition: transform .08s ease, filter .15s ease, box-shadow .15s ease;
+}
+.btns a:active{ transform: translateY(1px) scale(.99); }
+.btns a.primary{
+  background: linear-gradient(135deg, rgba(0,229,255,.22), rgba(180,0,255,.18));
+  border: 1px solid rgba(0,229,255,.30);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.35),
+    0 0 28px rgba(0,229,255,.18),
+    0 0 22px rgba(180,0,255,.10);
+}
+.btns a.secondary{
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.22),
+    0 0 0 1px rgba(255,255,255,.05) inset;
+}
+.btns a:hover{ filter: brightness(1.05); }
+@media (max-width: 520px){
+  .btns a{ padding:9px 12px; }
+}
+
+button{
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+  color: var(--text0);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 14px;
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.25),
+    0 0 0 1px rgba(0,229,255,.06) inset;
+  transition: transform .08s ease, filter .15s ease, box-shadow .15s ease;
+}
+button:active{ transform: translateY(1px) scale(.99); }
+
+/* Primary buttons */
+button.primary, .primary button{
+  background: linear-gradient(135deg, rgba(0,229,255,.22), rgba(180,0,255,.18));
+  border: 1px solid rgba(0,229,255,.30);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.35),
+    0 0 28px rgba(0,229,255,.18),
+    0 0 22px rgba(180,0,255,.10);
+}
+
+/* Tab buttons */
+.tabbtn{
+  background: rgba(255,255,255,.07);
+  color: var(--text0);
+  border: 1px solid rgba(255,255,255,.16);
+}
+.tabbtn.active{
+  background: linear-gradient(135deg, rgba(0,229,255,.22), rgba(180,0,255,.16));
+  border-color: rgba(0,229,255,.35);
+  box-shadow: 0 0 24px rgba(0,229,255,.20);
+}
+
+/* Inputs */
+input, textarea, select{
+  background: rgba(0,0,0,.26) !important;
+  color: var(--text0) !important;
+  border: 1px solid rgba(255,255,255,.20) !important;
+  box-shadow: 0 0 0 1px rgba(0,229,255,.05) inset;
+}
+input:focus, textarea:focus, select:focus{
+  outline: none;
+  border-color: rgba(0,229,255,.45) !important;
+  box-shadow:
+    0 0 0 2px rgba(0,229,255,.16),
+    0 0 22px rgba(0,229,255,.16);
+}
+input::placeholder, textarea::placeholder{
+  color: rgba(255,255,255,.50) !important;
+}
+
+/* Select arrow visibility on iOS */
+select{
+  -webkit-appearance: none;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255,255,255,.75) 50%),
+    linear-gradient(135deg, rgba(255,255,255,.75) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 4px),
+    calc(100% - 12px) calc(50% - 4px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 34px !important;
+}
+
+/* Tables */
+table{
+  border-collapse: separate;
+  border-spacing: 0;
+}
+th, td{
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+/* Subtle separators */
+hr{
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,229,255,.18), rgba(180,0,255,.14), transparent);
+}
+
+/* Scrollbar (where supported) */
+*::-webkit-scrollbar{ width: 10px; height:10px; }
+*::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(0,229,255,.35), rgba(180,0,255,.25));
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,.35);
+}
+*::-webkit-scrollbar-track{ background: rgba(0,0,0,.22); }
+
+/* Keep license status readable */
+#licenseStatus{
+  text-shadow: 0 0 18px rgba(0,229,255,.14);
+}
+
+/* Reduce motion friendly */
+@media (prefers-reduced-motion: reduce){
+  *{ transition: none !important; animation: none !important; }
+}
+
+
+/* ===== Final layout polish (responsive & usable) ===== */
+body{
+  margin: 0 !important;
+}
+#licenseGate, #appContainer{
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.topbar{
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.lockbar{
+  display:flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tabs{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Cards spacing */
+.card, .panel, .box{
+  margin-top: 12px;
+}
+
+/* Better forms on mobile */
+input, textarea, select{
+  width: 100%;
+  box-sizing: border-box;
+}
+label{
+  display:block;
+  margin-bottom: 6px;
+}
+.formRow{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 720px){
+  .formRow{ grid-template-columns: 1fr; }
+}
+
+/* Tables: keep readable on small screens */
+table{
+  width: 100%;
+}
+.tableScroll{
+  overflow-x:auto;
+  -webkit-overflow-scrolling: touch;
+}
+table thead th{
+  position: sticky;
+  top: 0;
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(8px);
+}
+
+
+/* ===== License Gate Cyber Style Fix ===== */
+#licenseGate{
+  min-height: 100vh;
+  align-items: center !important;
+  justify-content: center !important;
+}
+#licenseGate .card, #licenseGate .panel, #licenseGate .box{
+  width: min(560px, 100%);
+}
+#licenseGate > div{
+  width: min(560px, 100%);
+}
+#licenseGate, #licenseGate *{
+  color: rgba(255,255,255,.92);
+}
+#licenseGate input, #licenseGate textarea, #licenseGate select{
+  background: rgba(0,0,0,.28) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+}
+#licenseGate button{
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,229,255,.32);
+  background: linear-gradient(135deg, rgba(0,229,255,.26), rgba(180,0,255,.18));
+  color: rgba(255,255,255,.95);
+  box-shadow: 0 0 26px rgba(0,229,255,.16);
+}
+#licenseGate button.secondary{
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  box-shadow: none;
+}
+
+
+/* ===== Startup Overlay (A) ===== */
+#startupOverlay{
+  position:fixed; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background:
+    radial-gradient(900px 600px at 15% 0%, rgba(180,0,255,.26), transparent 55%),
+    radial-gradient(900px 600px at 100% 0%, rgba(0,229,255,.22), transparent 55%),
+    #070A12;
+  z-index:999999;
+  opacity:1;
+  transition: opacity 520ms ease;
+}
+#startupOverlay.hide{ opacity:0; pointer-events:none; }
+#startupOverlay .startupInner{ text-align:center; }
+#startupOverlay .startupMark{
+  width:86px; height:86px; margin:0 auto 14px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.16);
+  background: linear-gradient(135deg, rgba(0,229,255,.28), rgba(180,0,255,.20));
+  box-shadow: 0 0 34px rgba(0,229,255,.14), 0 0 34px rgba(180,0,255,.10);
+  position:relative;
+}
+#startupOverlay .startupMark:before{
+  content:""; position:absolute; inset:10px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow: inset 0 0 18px rgba(0,229,255,.12);
+}
+#startupOverlay .startupTitle{
+  letter-spacing:.18em;
+  font-weight:700;
+  font-size:18px;
+  text-shadow: 0 0 18px rgba(0,229,255,.18);
+}
+#startupOverlay .startupSub{
+  margin-top:8px;
+  color: rgba(255,255,255,.65);
+  font-size:12px;
+}
+@media (prefers-reduced-motion: reduce){
+  #startupOverlay{ transition:none; }
+}
+
+
+/* Startup icon + subtle motion (avoid "freeze" feel) */
+#startupOverlay .startupMark{
+  animation: startupPulse 1.2s ease-in-out infinite;
+}
+#startupOverlay .startupIcon{
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display:block;
+  margin: 16px auto 0;
+  filter: drop-shadow(0 0 10px rgba(0,229,255,.18)) drop-shadow(0 0 10px rgba(180,0,255,.14));
+}
+#startupOverlay .startupSub:after{
+  content:"";
+  display:inline-block;
+  width: 18px;
+  text-align:left;
+  animation: dots 1.0s steps(4,end) infinite;
+}
+@keyframes startupPulse{
+  0%,100%{ transform: scale(1); box-shadow: 0 0 30px rgba(0,229,255,.12), 0 0 30px rgba(180,0,255,.08); }
+  50%{ transform: scale(1.03); box-shadow: 0 0 44px rgba(0,229,255,.18), 0 0 44px rgba(180,0,255,.12); }
+}
+@keyframes dots{
+  0%{ content:""; }
+  25%{ content:"."; }
+  50%{ content:".."; }
+  75%{ content:"..."; }
+  100%{ content:""; }
+}
+
+
+/* ===== Header Neon Pulse (B) ===== */
+h1, .appTitle, #appTitle{
+  position:relative;
+  animation: neonPulse 2.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce){
+  h1, .appTitle, #appTitle{ animation:none; }
+}
+@keyframes neonPulse{
+  0%,100%{ text-shadow:0 0 14px rgba(0,229,255,.16), 0 0 22px rgba(180,0,255,.10); }
+  50%{ text-shadow:0 0 22px rgba(0,229,255,.24), 0 0 34px rgba(180,0,255,.16); }
+}
+
+
+/* ===== Modal (License & Updates) ===== */
+.hcModal{ position:fixed; inset:0; z-index:999998; display:none; }
+.hcModal.show{ display:block; }
+.hcModalBackdrop{ position:absolute; inset:0; background:rgba(0,0,0,.55); backdrop-filter: blur(6px); }
+.hcModalPanel{
+  position:relative;
+  margin: 10vh auto 0;
+  width: min(720px, calc(100vw - 22px));
+  max-height: 80vh;
+  overflow:auto;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(10,12,20,.72);
+  box-shadow: 0 18px 50px rgba(0,0,0,.45), 0 0 40px rgba(0,229,255,.08);
+}
+.hcModalHeader{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+.hcModalTitle{ font-weight:800; letter-spacing:.08em; font-size:14px; color: rgba(255,255,255,.92); }
+.hcModalClose{
+  appearance:none; border:0; background:transparent; color: rgba(255,255,255,.72);
+  font-size:18px; padding: 6px 10px; border-radius: 10px;
+}
+.hcModalClose:active{ transform: scale(.98); }
+.hcModalBody{ padding: 14px; }
+.hcInfoGrid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 10px;
+}
+@media (min-width: 720px){
+  .hcInfoGrid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+.hcInfoCard{
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.20);
+}
+.hcInfoLabel{ font-size:11px; color: rgba(255,255,255,.60); margin-bottom:6px; }
+.hcInfoValue{ font-size:13px; color: rgba(255,255,255,.92); font-weight:700; }
+.hcInfoValue.mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-weight:600; font-size:12px; }
+.hcSection{ margin-top: 14px; }
+.hcSectionTitle{ font-weight:800; color: rgba(255,255,255,.90); font-size:13px; margin: 6px 0 10px; }
+.hcChangelog{ display:flex; flex-direction:column; gap:10px; }
+.hcChangelogItem{
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+.hcChangelogVer{ font-size:12px; font-weight:800; letter-spacing:.06em; color: rgba(0,229,255,.78); }
+.hcChangelogTxt{ margin-top:6px; font-size:12px; line-height:1.55; color: rgba(255,255,255,.78); }
+.hcHint{ margin-top:8px; font-size:11px; color: rgba(255,255,255,.55); }
+.hcModalActions{ display:flex; gap:10px; justify-content:flex-end; margin-top: 14px; flex-wrap:wrap; }
+
+
+/* HyperCore mobile account fixes */
+@media (max-width: 920px){
+  .acct-grid{ grid-template-columns: 1fr !important; }
+  .acct-top-actions{ justify-content: flex-start !important; flex-wrap: wrap; gap: 10px; }
+  .acct-top-actions button{ width: auto; flex: 0 0 auto; }
+  .acct-top-actions .danger{ margin-left: 0 !important; }
+  .acct-table{ width: 100%; font-size: 13px; }
+  .acct-col-label{ min-width: 120px; }
+  .acct-col-actions{ min-width: 180px; }
+}
+@media (max-width: 520px){
+  /* Make the table behave better on very small screens */
+  .acct-table thead{ display:none; }
+  .acct-table, .acct-table tbody, .acct-table tr, .acct-table td{ display:block; width:100%; }
+  .acct-table tr{ border-bottom: 1px solid rgba(255,255,255,.08); padding: 10px 0; }
+  .acct-table td{ padding: 6px 10px !important; }
+  .acct-table td:first-child{ font-weight: 700; }
+  /* Action buttons inside rows */
+  .acct-table button{ width: 100%; margin: 6px 0; }
+}
+
+
+    /* Post settings modal */
+    .hc-modal-backdrop{
+      position: fixed; inset: 0;
+      display: none;
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 999999;
+      padding: 16px;
+    }
+    .hc-modal-backdrop.show{ display:block; }
+    .hc-modal{
+      max-width: 760px;
+      margin: 8vh auto 0;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      box-shadow: 0 20px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(0,229,255,.08) inset;
+      overflow: hidden;
+    }
+    
+/* === v11 readability & contrast fixes (mobile) === */
+.hc-modal-backdrop{ backdrop-filter: blur(10px) saturate(120%); -webkit-backdrop-filter: blur(10px) saturate(120%); }
+.hc-modal{ box-shadow: 0 24px 60px rgba(0,0,0,0.6); }
+.hc-modal, .hc-modal *{ -webkit-tap-highlight-color: transparent; }
+.hc-modal input, .hc-modal textarea, .hc-modal select{
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.96) !important;
+  border: 1px solid rgba(255,255,255,0.20) !important;
+}
+.hc-modal input::placeholder, .hc-modal textarea::placeholder{
+  color: rgba(255,255,255,0.45) !important;
+}
+.hc-modal .hc-chip{
+  background: rgba(0,0,0,0.25) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+}
+.hc-modal .hc-footer{
+  background: rgba(10,14,20,0.92) !important;
+  border-top: 1px solid rgba(255,255,255,0.12) !important;
+}
+/* Main screen inputs/textarea contrast (the “ふふふ” area etc.) */
+input, textarea, select{
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.96);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+input::placeholder, textarea::placeholder{ color: rgba(255,255,255,0.45); }
+/* Avoid odd bright bands on iOS by preventing white overscroll background */
+html, body{ background-color:#070b12; }
+.hc-modal-head{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 14px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .hc-modal-title{ font-weight: 800; letter-spacing: .04em; }
+    .hc-modal-body{ padding: 14px; max-height: 62vh; overflow:auto; }
+    .hc-modal-foot{
+      padding: 12px 14px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      display:flex; justify-content:flex-end; gap:10px;
+    }
+    .hc-icon-btn{
+      width: 38px; height: 38px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      cursor:pointer;
+    }
+
+
+/* === HyperCore UI hotfix (mobile + modal + buttons) === */
+:root{ --hc-safe-top: env(safe-area-inset-top); --hc-safe-bottom: env(safe-area-inset-bottom); }
+button, input, textarea, select{ -webkit-appearance:none; appearance:none; }
+#stickybar{ display:none !important; }
+
+/* Action buttons block */
+.btns{
+  position: sticky;
+  top: calc(var(--hc-safe-top) + 110px);
+  z-index: 20;
+  background: rgba(8,12,18,.35);
+  border: 1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 18px;
+  padding: 12px;
+  margin-top: 14px;
+}
+.btns{ display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-start; }
+.btns button{
+  background: rgba(255,255,255,.10) !important;
+  color: #eaf2ff !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  border-radius: 16px !important;
+  padding: 12px 14px !important;
+  font-weight: 800;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+.btns button:disabled{ opacity:.45; filter:saturate(.7); }
+@media (max-width: 520px){
+  .btns button{ flex: 1 1 calc(50% - 10px); }
+}
+
+/* Modal readability */
+body.hc-modal-open{ overflow:hidden !important; touch-action:none; }
+#postSettingsModal{
+  background: rgba(0,0,0,.72) !important;
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+}
+#postSettingsModal .modal{
+  background: rgba(10,14,20,.96) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  box-shadow: 0 20px 80px rgba(0,0,0,.55);
+}
+#postSettingsModal .modal .modal-body{
+  max-height: min(72vh, 720px);
+  overflow:auto;
+  padding-bottom: calc(18px + var(--hc-safe-bottom));
+}
+#postSettingsModal .modal .modal-footer{
+  position: sticky;
+  bottom: 0;
+  background: rgba(10,14,20,.92);
+  padding-top: 12px;
+  padding-bottom: calc(10px + var(--hc-safe-bottom));
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+
+/* Output area */
+#output{ min-height: 180px; line-height: 1.6; }
+
+
+/* === Output cards (glass) === */
+.outCard{
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 16px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+  box-shadow: 0 14px 40px rgba(0,0,0,.45);
+  margin: 12px 0;
+}
+.outMeta{ display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
+.outBadge{
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.18);
+}
+.outCount{ opacity:.85; font-weight: 700; }
+.outText{
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(10,14,20,.70);
+  color: rgba(255,255,255,.96);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.outActions{ margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.outActions .btn{ padding: 10px 14px; border-radius: 14px; }
+.outActions .btn.secondary{
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.92);
+}
+.outActions .btn.primary{
+  background: linear-gradient(90deg, rgba(0,229,255,.20), rgba(166,0,255,.18));
+  border: 1px solid rgba(0,229,255,.25);
+  color: rgba(255,255,255,.96);
+}
+
+/* === Details/accordion affordance (accounts) === */
+details.hc-acc details, details.hc-acc{ width:100%; }
+details.hc-acc > summary{
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.14);
+}
+details.hc-acc > summary::-webkit-details-marker{ display:none; }
+.hc-acc-summary-title{ font-weight: 900; letter-spacing:.02em; }
+.hc-acc-summary-sub{ opacity:.75; font-size: 12px; margin-left: 10px; }
+.hc-acc-summary-right{ display:flex; align-items:center; gap:10px; opacity:.9; }
+.hc-acc-chevron{
+  width: 10px; height: 10px;
+  border-right: 2px solid rgba(255,255,255,.85);
+  border-bottom: 2px solid rgba(255,255,255,.85);
+  transform: rotate(45deg);
+  transition: transform .18s ease;
+}
+details.hc-acc[open] .hc-acc-chevron{ transform: rotate(-135deg); }
+
+
+/* === FAB + Drawer (Accounts) === */
+
+
+
+#drawerOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  z-index: 9997;
+}
+#drawerOverlay.show{ display:block; }
+
+#accountsDrawer{
+  position: fixed;
+  top: 0; right: 0;
+  height: 100%;
+  width: min(92vw, 520px);
+  transform: translateX(105%);
+  transition: transform .22s ease;
+  z-index: 9999;
+  background: rgba(12,14,20,.92);
+  border-left: 1px solid rgba(255,255,255,.10);
+  box-shadow: -20px 0 80px rgba(0,0,0,.55);
+  display: flex;
+  flex-direction: column;
+}
+#accountsDrawer.show{ transform: translateX(0); }
+
+.drawerHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 14px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.drawerTitle{
+  font-weight: 900;
+  letter-spacing: .06em;
+  font-size: 13px;
+  opacity: .95;
+}
+.iconBtn{
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  font-weight: 900;
+}
+.drawerBody{
+  padding: 14px;
+  overflow: auto;
+}
+
+/* Make summary caret unnecessary (we removed details) */
+
+
+/* === Top Header === */
+.hc-header{
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 16px;
+  background: rgba(15,18,25,.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.hc-title{
+    display:flex;align-items:center;gap:10px;
+  }
+  .hc-logo{width:22px;height:22px;border-radius:6px;box-shadow:0 0 0 1px rgba(255,255,255,.18) inset;}
+
+  .hc-title{
+  font-weight:900;
+  letter-spacing:.06em;
+}
+
+#topGearBtn{
+  font-size:20px;
+  background:transparent;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:12px;
+  padding:6px 10px;
+  color:#fff;
+}
+
+
+/* === v19 quick fixes === */
+html, body { margin:0 !important; padding:0 !important; }
+body { min-height:100vh; }
+.hc-header { position: sticky; top:0; z-index: 50; border-radius: 0 0 18px 18px; margin: 0; }
+.hc-header::before{ content:""; position:absolute; inset:0; border-radius: inherit; background: rgba(0,0,0,.32); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index:-1; }
+.hc-header{ background: transparent !important; }
+
+
+/* --- drawer page visibility fix --- */
+.drawer.open .page { display:block !important; }
+.drawer.open #pageAccounts { display:block !important; }
+.drawer.open #pageAccounts .panel { margin-top: 12px; }
+/* make drawer content scrollable and interactive */
+.drawer .drawerBody { overflow:auto; -webkit-overflow-scrolling: touch; pointer-events:auto; }
+
+
+/* Drawer tabs */
+.drawerTabs{display:flex;gap:10px;margin:6px 0 14px;padding:0 2px;}
+.drawerTab{flex:1;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.08);color:#eaf2ff;font-weight:800;letter-spacing:.06em}
+.drawerTab.active{background:linear-gradient(135deg, rgba(0,255,255,.18), rgba(170,120,255,.18));border-color:rgba(0,255,255,.25)}
+.drawerTabPanel{display:none}
+.drawerTabPanel.active{display:block}
+.panelCard{padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:rgba(10,14,24,.55);backdrop-filter:blur(10px)}
+.panelTitle{font-weight:900;font-size:16px;margin-bottom:6px}
+.panelDesc{opacity:.85;font-size:13px;line-height:1.5;margin-bottom:12px}
+.panelActions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* === Accounts list cards (drawer) === */
+.acc-list{ display:flex; flex-direction:column; gap:10px; }
+.acc-item{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px;
+  padding:12px 12px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  border-radius:14px;
+  cursor:pointer;
+}
+.acc-item:active{ transform: scale(.99); }
+.acc-item .acc-main{ min-width:0; }
+.acc-item .acc-name{
+  font-weight:800; font-size:14px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.acc-item .acc-sub{
+  font-size:12px; opacity:.75;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.acc-item .acc-pill{
+  font-size:12px; padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.18);
+  opacity:.9;
+}
+
+/* === Bottom sheet (account detail) === */
+.hc-sheet-overlay{
+  position:fixed; inset:0;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 20000;
+  padding: 12px;
+}
+.hc-sheet-overlay.show{ display:flex; }
+.hc-sheet{
+  width: min(96vw, 520px);
+  background: rgba(12,14,20,.96);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  box-shadow: 0 20px 80px rgba(0,0,0,.65);
+  overflow:hidden;
+}
+.hc-sheet-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 12px 12px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.hc-sheet-title{ font-weight:900; letter-spacing:.06em; }
+.hc-sheet-body{
+  padding: 12px 12px;
+  max-height: 52vh;
+  overflow:auto;
+}
+.hc-kv{
+  display:grid;
+  grid-template-columns: 120px 1fr;
+  gap:8px 10px;
+  padding:10px 10px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  border-radius: 14px;
+  font-size: 13px;
+}
+.hc-kv b{ opacity:.85; }
+.hc-kv span{ opacity:.9; word-break: break-word; }
+.hc-sheet-actions{
+  display:flex; gap:10px;
+  padding: 12px 12px;
+  border-top:1px solid rgba(255,255,255,.10);
+  flex-wrap:wrap;
+}
+
+
+
+/* === App shell navigation === */
+.app-shell{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:start;}
+.app-sidebar{position:sticky;top:82px;border:1px solid rgba(255,255,255,.12);border-radius:20px;background:rgba(10,14,24,.58);backdrop-filter:blur(12px);padding:14px;box-shadow:0 14px 40px rgba(0,0,0,.30);}
+.app-nav-title{font-size:12px;letter-spacing:.12em;opacity:.7;margin:0 0 12px;font-weight:800;}
+.app-nav{display:grid;gap:8px;}
+.app-navbtn{width:100%;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);color:var(--text0);font-weight:800;}
+.app-navbtn.active{background:linear-gradient(135deg, rgba(0,229,255,.22), rgba(180,0,255,.18));border-color:rgba(0,229,255,.28);box-shadow:0 0 24px rgba(0,229,255,.12);}
+.app-navmeta{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--text1);line-height:1.6;}
+.app-content{min-width:0;}
+.mobile-nav-toggle{display:none;width:100%;margin-bottom:12px;padding:12px 14px;border-radius:16px;text-align:left;font-weight:900;}
+.mobile-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(8px);z-index:120;}
+.mobile-nav-overlay.show{display:block;}
+.mobile-nav-drawer{position:fixed;top:0;left:0;bottom:0;width:min(82vw,320px);padding:18px;transform:translateX(-105%);transition:transform .22s ease;background:rgba(10,14,24,.96);border-right:1px solid rgba(255,255,255,.10);z-index:121;box-shadow:16px 0 50px rgba(0,0,0,.42);}
+.mobile-nav-drawer.show{transform:translateX(0);}
+.mobile-nav-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.mobile-nav-close{width:40px;height:40px;border-radius:12px;}
+.page-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.page-title h2{margin:0;font-size:18px;}
+.page-title .muted{margin:0;}
+.page-section{display:none;}
+.page-section.active{display:block;}
+.service-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;}
+@media (max-width: 980px){
+  .app-shell{grid-template-columns:1fr;}
+  .app-sidebar{display:none;}
+  .mobile-nav-toggle{display:block;}
+}
+
+
+/* === Threads manager === */
+.threads-tabpanel{display:none;}
+.threads-tabpanel.active{display:block;}
+.threads-mini{font-size:12px;color:#9fb0c6;}
+.threads-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.threads-actions button{padding:8px 12px;font-size:12px;border-radius:12px}
+.threads-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+.threads-stat{padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.threads-stat .n{font-size:24px;font-weight:900}
+.threads-log{display:grid;gap:10px;margin-top:12px}
+.threads-log-item{padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.threads-log-time{font-size:11px;opacity:.72;margin-bottom:4px}
+.threads-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);font-size:12px}
+@media (max-width:900px){.threads-stat-grid{grid-template-columns:repeat(2,1fr)}}
+
+
+.threads-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.feature-note{font-size:12px;color:#9fb0c6;margin-top:8px;line-height:1.6}
+.monitor-list,.export-list{display:grid;gap:10px;margin-top:12px}
+.monitor-item,.export-item{padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.kpi-box{padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.kpi-box .num{font-size:22px;font-weight:900}
+@media (max-width:900px){.threads-grid-2,.kpi-row{grid-template-columns:1fr}}
+
+
+/* ===== PC最適化レイアウト ===== */
+@media (min-width:1200px){
+
+body{
+max-width:1500px;
+margin:0 auto;
+}
+
+/* 全体3カラム */
+.pc-layout{
+display:grid;
+grid-template-columns:220px 1fr 360px;
+gap:20px;
+align-items:start;
+}
+
+/* 左メニュー */
+.sidebar,
+.left-menu,
+.side-menu{
+width:220px;
+flex:0 0 220px;
+}
+
+/* 中央 */
+.dashboard,
+.main-content,
+.center-panel{
+width:100%;
+max-width:none;
+}
+
+/* 右設定 */
+.account-panel,
+.settings-panel,
+.right-panel{
+position:relative !important;
+right:auto !important;
+top:auto !important;
+width:360px;
+height:auto;
+}
+
+/* オーバーレイ消す */
+.overlay,
+.modal-backdrop{
+display:none !important;
+}
+
+}
+
+/* 少し見た目調整 */
+@media (min-width:1200px){
+
+.card,
+.panel,
+.glass-card{
+width:100%;
+}
+
+input,textarea,button{
+font-size:14px;
+}
+
+}
+
+</style>
+
+<script>
+
+function cleanValue(v){
+  if(v === null || v === undefined) return undefined;
+  let s = String(v).trim();
+  if(!s) return undefined;
+
+  // Treat special placeholders as empty (ignore them)
+  const up = s.toUpperCase();
+  if(up === "NODATA" || up === "NO DATA" || up === "NULL" || up === "NONE" || up === "-") return undefined;
+
+  // Strip surrounding quotes
+  if((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))){
+    s = s.slice(1, -1).trim();
+    if(!s) return undefined;
+  }
+  return s;
+}
+
+function removeUndefinedFields(obj){
+  const out = {};
+  for(const k in obj){
+    if(Object.prototype.hasOwnProperty.call(obj,k) && obj[k] !== undefined){
+      out[k] = obj[k];
+    }
+  }
+  return out;
+}
+// ===== Ensure stable deviceId =====
+(function(){
+  try{
+    const keys = ['deviceId','licenseDeviceId','hc_deviceId'];
+    let cur = null;
+    for(const k of keys){
+      const v = localStorage.getItem(k);
+      if(v && v.length > 6){ cur = v; break; }
+    }
+    if(!cur){
+      // pseudo-UUID (no crypto required)
+      const r = () => Math.random().toString(16).slice(2,10);
+      cur = 'hc-' + r() + '-' + r();
+    }
+    localStorage.setItem('hc_deviceId', cur);
+    // keep legacy key too for older code
+    if(!localStorage.getItem('deviceId')) localStorage.setItem('deviceId', cur);
+  }catch(e){}
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style id="hc-v11-x-cleanup-fix">
+/* v11: keep X tabs visible, remove extra license/header clutter inside X account tab */
+#sectionX #hcXTabSystem .hc-x-tabbtn[data-xtab="license"],
+#sectionX #hcXTab_license{ display:none !important; }
+#sectionX #hcXTabSystem .drawerHeader,
+#sectionX #hcXTabSystem #drawerCloseBtn,
+#sectionX #hcXTabSystem .drawerTitle,
+#sectionX #hcXTabSystem .drawerTab[data-tab="lic"],
+#sectionX #hcXTabSystem #drawerTab_lic,
+#sectionX #hcXTabSystem .drawerTabs{ display:none !important; }
+#sectionX #hcXTab_account #accountsDrawer{
+  position: static !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  transform: none !important;
+  display: block !important;
+  border-radius: 18px !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+#sectionX #hcXTab_account #accountsDrawer .drawerPanel{
+  background: transparent !important;
+  max-height: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+#sectionX #hcXTab_account #accountsDrawer .drawerBody{
+  padding: 0 !important;
+  overflow: visible !important;
+}
+</style>
+
+
+<style id="hc-x-tabs-rebuild-fix">
+#topGearBtn{display:none !important;}
+
+/* rebuild X tabs */
+#sectionX .hc-x-rebuilt{
+  display:grid;
+  gap:16px;
+  margin-top:12px;
+}
+#sectionX .hc-x-tabbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+#sectionX .hc-x-tabbtn{
+  padding:11px 16px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  font-weight:800;
+  letter-spacing:.02em;
+}
+#sectionX .hc-x-tabbtn.active{
+  background:linear-gradient(135deg, rgba(0,229,255,.22), rgba(180,0,255,.18));
+  border-color:rgba(0,229,255,.28);
+  box-shadow:0 0 24px rgba(0,229,255,.12);
+}
+#sectionX .hc-x-panel{display:none;}
+#sectionX .hc-x-panel.active{display:block;}
+
+/* account panel embedded in X */
+#sectionX #accountsDrawer{
+  position:static !important;
+  transform:none !important;
+  display:block !important;
+  width:100% !important;
+  height:auto !important;
+  max-width:none !important;
+  max-height:none !important;
+  box-shadow:none !important;
+  border:0 !important;
+  background:transparent !important;
+}
+#sectionX #accountsDrawer .drawerPanel{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  max-height:none !important;
+}
+#sectionX #accountsDrawer .drawerHeader,
+#sectionX #accountsDrawer .drawerTabs,
+#sectionX #drawerTab_lic,
+#sectionX .drawerTab[data-tab="lic"],
+#sectionX .hc-x-license-card{
+  display:none !important;
+}
+#sectionX #accountsDrawer .drawerBody{
+  padding:0 !important;
+  overflow:visible !important;
+}
+
+/* remove any stray legacy X tab/license placeholders */
+#sectionX #hcXTab_license,
+#sectionX .hc-x-tabbtn[data-xtab="license"]{
+  display:none !important;
+}
+
+@media (max-width:720px){
+  #sectionX .hc-x-tabbar{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:2px;
+  }
+  #sectionX .hc-x-tabbtn{
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
+}
+</style>
+
+</head>
+
+<body>
+
+<header class="hc-header">
+  <div class="hc-title"><img class="hc-logo" src="icon-180.png" alt="Hyper Core" />SNS Hyper Core</div>
+</header>
+
+
+<!-- ===== Startup Logo Overlay (A) ===== -->
+<div id="startupOverlay" aria-hidden="true">
+  <div class="startupInner">
+    <div class="startupMark" aria-hidden="true">
+      <img class="startupIcon" src="icon-180.png" alt="" loading="eager" />
+    </div>
+    <div class="startupTitle">HYPER CORE</div>
+    <div class="startupSub">loading…</div>
+  </div>
+</div>
+
+  <!-- License Gate: shown until activation succeeds -->
+  <div id="licenseGate">
+    <div class="gateBox">
+      <h2>ライセンス認証</h2>
+      <div class="muted">キー形式：XXXX-XXXX-XXXX-XXXX（1ライセンス=1台 / アクティベートから◯日）</div>
+      <label style="margin-top:10px;">ライセンスキー</label>
+      <input id="licenseKeyInput_gate" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" />
+      <div class="btns" style="margin-top:10px;">
+        <button id="activateBtn_gate" type="button">アクティベート</button>
+      </div>
+      <div class="muted" id="licenseMsg_gate"></div>
+    </div>
+  </div>
+
+  <div id="appContainer">
+
+  <div class="topbar">
+<div class="lockbar">
+      <span class="pill" id="licenseStatus">🔒 未認証</span>
+      <button class="secondary" id="openLicenseBtn" type="button">ライセンス認証</button>
+    </div>
+
+  
+  <button class="mobile-nav-toggle" id="mobileNavToggle" type="button">☰ メニューを開く</button>
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <aside class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+    <div class="mobile-nav-head">
+      <div class="app-nav-title">HYPER CORE MENU</div>
+      <button class="mobile-nav-close" id="mobileNavClose" type="button" aria-label="閉じる">×</button>
+    </div>
+    <div class="app-nav" id="mobileAppNav">
+      <button class="app-navbtn active" type="button" data-section="sectionDashboard">ダッシュボード</button>
+      <button class="app-navbtn" type="button" data-section="sectionX">X</button>
+      <button class="app-navbtn" type="button" data-section="sectionTelegram">Telegram</button>
+      <button class="app-navbtn" type="button" data-section="sectionThreads">Threads</button>
+      <button class="app-navbtn" type="button" data-section="sectionSettings">共通設定</button>
+    </div>
+  </aside>
+
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <div class="app-nav-title">HYPER CORE MENU</div>
+      <div class="app-nav" id="desktopAppNav">
+        <button class="app-navbtn active" type="button" data-section="sectionDashboard">ダッシュボード</button>
+        <button class="app-navbtn" type="button" data-section="sectionX">X</button>
+        <button class="app-navbtn" type="button" data-section="sectionTelegram">Telegram</button>
+        <button class="app-navbtn" type="button" data-section="sectionThreads">Threads</button>
+        <button class="app-navbtn" type="button" data-section="sectionSettings">共通設定</button>
+      </div>
+      <div class="app-navmeta">
+        共通レイアウトのまま、サービスごとの中身だけ切り替える構成です。<br>
+        今後 Instagram / Discord / LINE を増やす時も同じ作りで拡張できます。
+      </div>
+    </aside>
+
+    <main class="app-content">
+      <section class="page-section active" id="sectionDashboard">
+        <div class="card">
+          <div class="page-title">
+            <div>
+              <h2>ダッシュボード</h2>
+              <p class="muted">X・Telegram・Threads を1つの管理画面で切り替えるホームです。</p>
+            </div>
+          </div>
+          <div class="row3">
+            <div class="card"><div style="font-weight:800;">X</div><div class="muted" style="margin-top:6px;">投稿生成 / アカウント管理</div></div>
+            <div class="card"><div style="font-weight:800;">Telegram</div><div class="muted" style="margin-top:6px;">Bot送信 / 予約投稿</div></div>
+            <div class="card"><div style="font-weight:800;">Threads</div><div class="muted" style="margin-top:6px;">条件返信 / リード管理を追加予定</div></div>
+          </div>
+
+          <div class="card" style="margin-top:12px;">
+            <div style="font-weight:800; margin-bottom:8px;">Threadsサマリー</div>
+            <div id="dashboardThreadsSummary" class="muted">Threadsデータを集計して表示します。</div>
+            <div class="threads-stat-grid" id="dashboardThreadsStats"></div>
+          </div>
+          <div class="card" style="margin-top:12px;">
+            <div style="font-weight:800; margin-bottom:8px;">アクティビティログ</div>
+            <div class="muted">Threadsの保存・シミュレーション・DM候補生成などをここに記録します。</div>
+            <div id="dashboardActivityLog" class="threads-log"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="page-section" id="sectionX">
+        <div class="page-title">
+          <div>
+            <h2>X</h2>
+            <p class="muted">既存の投稿生成機能はそのまま残し、X専用ページとして分離しています。</p>
+          <div class="card" style="margin-top:12px;">
+            <div style="font-weight:800; margin-bottom:8px;">X自動ポスト設定</div>
+            <div class="muted">生成済みポストを予約として保存しておけるローカル管理機能です。後からWorker / Queue実行へ接続できます。</div>
+            <div class="row">
+              <div>
+                <label>ジョブ名</label>
+                <input id="xAutoPostTitle" placeholder="例：朝ポスト配信" />
+                <label>実行日時</label>
+                <input id="xAutoPostAt" type="datetime-local" />
+              </div>
+              <div>
+                <label>投稿内容</label>
+                <textarea id="xAutoPostText" placeholder="ここにXへ投げる内容"></textarea>
+              </div>
+            </div>
+            <div class="btns">
+              <button type="button" id="xAutoPostSaveBtn">予約保存</button>
+              <button type="button" class="secondary" id="xAutoPostRunNowBtn">今すぐ投稿テスト</button>
+            </div>
+            <div id="xAutoPostList" class="sched-list" style="margin-top:12px;"></div>
+          </div>
+          </div>
+        </div>
+
+  <div class="page active" id="pageMain">
+
+  <!-- License modal -->
+  <div id="licenseModal" aria-hidden="true">
+    <div class="box">
+      <h3>ライセンス認証</h3>
+      <div class="muted">キー形式：XXXX-XXXX-XXXX-XXXX（1ライセンス=1台 / アクティベートから◯日）</div>
+      <label style="margin-top:10px;">ライセンスキー</label>
+      <input id="licenseKeyInput" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" />
+      <div class="btns" style="margin-top:10px;">
+        <button id="activateBtn" type="button">アクティベート</button>
+        <button class="secondary" id="closeLicenseBtn" type="button">閉じる</button>
+      </div>
+      <div class="muted" id="licenseMsg"></div>
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="card">
+      <label>テンプレート（{{変数名}} を使う）</label>
+      <select id="templateSelect"></select>
+
+      <label>テンプレ本文</label>
+      <textarea id="templateText"></textarea>
+
+      <div class="muted">
+        例：{{target}} / {{pain}} / {{benefit}} / {{cta}} / {{tag}}<br>
+        ※変数名は自由。本文内に出てきた変数を自動抽出して入力欄を作るよ。
+      </div>
+
+      <div class="btns">
+        <button class="secondary" id="saveTemplateBtn">テンプレ保存</button>
+        <button class="secondary" id="newTemplateBtn">新規テンプレ</button>
+        <button class="secondary" id="deleteTemplateBtn">削除</button>
+      </div>
+      <div class="muted" style="margin-top:8px;">テンプレはブラウザの localStorage に保存されます。</div>
+    </div>
+
+    <div class="card">
+      <div class="btns" style="margin-bottom:10px;">
+        <button class="secondary" id="openPostSettingsBtn" type="button">投稿設定</button>
+      </div>
+      <div id="postSettingsBlock" style="display:none;">
+      <label>生成数（最大）</label>
+      <input id="maxGen" type="number" min="1" max="200" value="30">
+
+      <label>変数ごとの候補（1行=1候補）</label>
+      <div id="varsArea"></div>
+
+
+      <label style="margin-top:12px;">バズワード辞書（1行=1フレーズ）</label>
+      <textarea id="buzzwords" placeholder="例：最短で / 9割が知らない / 今すぐ / ガチで / これだけでOK" style="min-height:92px;"></textarea>
+      <div class="muted">テンプレ内で <b>{{buzz}}</b> を使うと、生成時に辞書からランダム挿入します（未設定なら空）。</div>
+      <div class="btns">
+        <button class="secondary" id="saveBuzzBtn" type="button">辞書保存</button>
+        <button class="secondary" id="insertBuzzBtn" type="button">ランダム挿入（カーソル位置）</button>
+        <button class="secondary" id="clearBuzzBtn" type="button">辞書クリア</button>
+      </div>
+      </div>
+
+
+      <div class="btns">
+        <button id="generateBtn">生成</button>
+        <button class="secondary" id="shuffleBtn">シャッフル生成</button>
+        <button class="secondary" id="copyAllBtn">全部コピー</button>
+        <button class="secondary" id="exportBtn">JSON書き出し</button>
+        <button class="secondary" id="importBtn">JSON読み込み</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none;">
+      </div>
+
+      <div class="muted" id="stats"></div>
+      <div class="muted" id="xCharInfo"></div>
+    </div>
+  </div>
+
+  <div class="out" id="output"></div>
+
+</div>
+  
+<!-- current account card removed (use gear settings) -->
+
+<!-- /pageMain -->
+
+  <!-- pageAccounts moved into drawer -->
+
+
+      </section>
+
+      <section class="page-section" id="sectionTelegram">
+        <div class="page-title">
+          <div>
+            <h2>Telegram</h2>
+            <p class="muted">Telegram Bot送信と予約投稿をここに集約します。</p>
+          </div>
+        </div>
+
+  <div class="page" id="pageTelegram" style="display:block;"> 
+    <div class="card">
+      <h2 style="margin:0 0 8px; font-size:16px;">Telegramボット</h2>
+      <div class="muted">※ブラウザからBot APIへ直接送信します（Bot TokenがこのPCのlocalStorageに保存されます）。</div>
+
+      <label style="margin-top:10px;">Bot Token</label>
+      <input id="tgToken" placeholder="123456:ABC-DEF..." autocomplete="off" />
+
+      <label>送信先（chat_id / @channel / -100...）</label>
+      <input id="tgChatId" placeholder="@your_channel  または  -100xxxxxxxxxx" />
+
+      <div class="row3">
+        <div>
+          <label>Parse mode</label>
+          <select id="tgParseMode">
+            <option value="">なし</option>
+            <option value="HTML">HTML</option>
+            <option value="MarkdownV2">MarkdownV2</option>
+          </select>
+        </div>
+        <div>
+          <label>リンクプレビュー</label>
+          <select id="tgPreview">
+            <option value="true">表示する</option>
+            <option value="false">表示しない</option>
+          </select>
+        </div>
+        <div>
+          <label>送信方式</label>
+          <select id="tgSendMode">
+            <option value="single">まとめて1通</option>
+            <option value="multi">1投稿=1通</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btns" style="margin-top:10px;">
+        <button id="tgSaveBtn" class="secondary" type="button">保存</button>
+        <button id="tgSendBtn" type="button">いま送信</button>
+      </div>
+      <div class="muted" id="tgMsg"></div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 8px; font-size:16px;">予約投稿</h2>
+      <div class="muted">※このページ（ブラウザ）が開いている間だけ実行できます。閉じると送信/通知できません。</div>
+
+      <label style="margin-top:10px;">対象</label>
+      <select id="schedType">
+        <option value="tg">Telegramに送信</option>
+        <option value="x">X用リマインド（コピー用）</option>
+      </select>
+
+      <label>実行日時（日本時間）</label>
+      <input id="schedAt" type="datetime-local" />
+
+      <label>内容（空なら「最新の生成結果」を使う）</label>
+      <textarea id="schedText" placeholder="空なら、出力欄の内容を使う" style="min-height:110px;"></textarea>
+
+      <div class="btns" style="margin-top:10px;">
+        <button id="schedAddBtn" type="button">予約追加</button>
+        <button id="schedRunNowBtn" class="secondary" type="button">今すぐ実行</button>
+        <button id="schedClearBtn" class="secondary" type="button">予約全削除</button>
+      </div>
+
+      <div id="schedList" class="muted" style="margin-top:10px;"></div>
+    </div>
+  </div> <!-- /pageTelegram -->
+
+
+
+
+      </section>
+
+      <section class="page-section" id="sectionThreads">
+        <div class="card">
+          <div class="page-title">
+            <div>
+              <h2>Threads</h2>
+              <p class="muted">条件返信、リード管理、DM連携モードをここで管理します。</p>
+            </div>
+          </div>
+
+          <div class="service-tabs" id="threadsTabs">
+            <button class="tabbtn active" type="button" data-threadstab="posts">投稿管理</button>
+            <button class="tabbtn" type="button" data-threadstab="rules">条件返信</button>
+            <button class="tabbtn" type="button" data-threadstab="leads">リード一覧</button>
+            <button class="tabbtn" type="button" data-threadstab="dm">DM連携</button>
+            <button class="tabbtn" type="button" data-threadstab="settings">設定</button>
+            <button class="tabbtn" type="button" data-threadstab="automation">自動処理</button>
+            <button class="tabbtn" type="button" data-threadstab="monitor">監視</button>
+            <button class="tabbtn" type="button" data-threadstab="export">出力</button>
+          </div>
+
+          <div class="threads-tabpanel active" id="threadsTab_posts">
+            <div class="row">
+              <div class="card">
+                <label>対象投稿ID / URL</label>
+                <input id="threadsPostTarget" placeholder="投稿URL もしくは 投稿ID" />
+                <label>投稿タイトルメモ</label>
+                <input id="threadsPostTitle" placeholder="例：詳細コメント導線投稿" />
+                <label>案内文メモ</label>
+                <textarea id="threadsPostNote" placeholder="この投稿では「詳細」「欲しい」などのコメントに反応"></textarea>
+                <div class="btns">
+                  <button type="button" id="threadsSavePostBtn">投稿設定を保存</button>
+                </div>
+              </div>
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">投稿管理メモ</div>
+                <div class="muted">ここでは Threads の対象投稿ごとの設定メモを保存します。将来的に webhook / 自動返信処理と紐づける前提です。</div>
+                <div id="threadsPostsList" class="out" style="margin-top:12px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="threads-tabpanel" id="threadsTab_rules">
+            <div class="row">
+              <div class="card">
+                <label>ルール名</label>
+                <input id="threadsRuleName" placeholder="例：詳細キーワード返信" />
+                <label>対象キーワード（カンマ区切り）</label>
+                <input id="threadsRuleKeywords" placeholder="詳細, 欲しい, 料金" />
+                <label>公開返信文</label>
+                <textarea id="threadsRuleReply" placeholder="ありがとうございます。詳細はDMまたは案内リンクから確認できます。"></textarea>
+                <label>動作</label>
+                <select id="threadsRuleAction">
+                  <option value="reply_only">公開返信のみ</option>
+                  <option value="reply_and_lead">公開返信 + リード保存</option>
+                  <option value="reply_and_dm_candidate">公開返信 + DM候補生成</option>
+                  <option value="full">公開返信 + リード保存 + DM候補生成</option>
+                </select>
+                <div class="btns">
+                  <button type="button" id="threadsSaveRuleBtn">ルール保存</button>
+                </div>
+              </div>
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">条件返信ルール</div>
+                <div class="muted">保存したルールは localStorage に保持。後で Worker 側ロジックと結合しやすい形にしてあります。</div>
+                <div id="threadsRulesList" class="out" style="margin-top:12px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="threads-tabpanel" id="threadsTab_leads">
+            <div class="row">
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">リード追加</div>
+                <label>ユーザー名</label>
+                <input id="threadsLeadUser" placeholder="@username" />
+                <label>コメント内容</label>
+                <textarea id="threadsLeadComment" placeholder="例：詳細ほしいです"></textarea>
+                <label>ステータス</label>
+                <select id="threadsLeadStatus">
+                  <option value="新規">新規</option>
+                  <option value="対応中">対応中</option>
+                  <option value="DM候補作成済み">DM候補作成済み</option>
+                  <option value="完了">完了</option>
+                </select>
+                <div class="btns">
+                  <button type="button" id="threadsSaveLeadBtn">リード保存</button>
+                </div>
+              </div>
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">リード一覧</div>
+                <label>表示フィルタ</label>
+                <select id="threadsLeadFilter"><option value="all">すべて</option><option value="新規">新規</option><option value="対応中">対応中</option><option value="DM候補作成済み">DM候補作成済み</option><option value="完了">完了</option></select>
+                <div class="muted">コメントしてきた相手を保存し、後からDM候補を作る前提の一覧です。</div>
+                <div id="threadsLeadsList" class="out" style="margin-top:12px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="threads-tabpanel" id="threadsTab_dm">
+            <div class="row">
+              <div class="card">
+                <label>DM連携モード</label>
+                <select id="threadsDmMode">
+                  <option value="off">OFF</option>
+                  <option value="candidate_only">DM候補のみ作成</option>
+                  <option value="semi_auto">半自動</option>
+                  <option value="full_auto">全自動（将来の実処理向け）</option>
+                </select>
+                <label>送信先</label>
+                <select id="threadsDmTarget">
+                  <option value="instagram">Instagram DM</option>
+                  <option value="threads">Threads DM</option>
+                  <option value="both">両方</option>
+                </select>
+                <label>DMテンプレ</label>
+                <textarea id="threadsDmTemplate" placeholder="ありがとうございます。詳細案内はこちらです。必要ならそのまま返信ください。"></textarea>
+                <div class="btns">
+                  <button type="button" id="threadsSaveDmBtn">DM設定を保存</button>
+                </div>
+              </div>
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">DM候補プレビュー</div>
+                <div class="muted">ここでは運用モードだけ先に固められます。実送信処理は後で API / 自動操作と接続する想定です。</div>
+                <div class="item" style="margin-top:12px;">
+                  <pre id="threadsDmPreview">保存するとここにテンプレが表示されます。</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="threads-tabpanel" id="threadsTab_automation">
+            <div class="row">
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">コメント自動処理シミュレーター</div>
+                <div class="muted">保存したルールがどう動くかをローカルで検証できます。</div>
+                <label>投稿ID / URL</label>
+                <input id="threadsSimPost" placeholder="https://threads.net/t/example" />
+                <label>ユーザー名</label>
+                <input id="threadsSimUser" placeholder="@demo_user" />
+                <label>コメント本文</label>
+                <textarea id="threadsSimComment" placeholder="例：詳細ほしいです"></textarea>
+                <div class="btns">
+                  <button type="button" id="threadsRunSimulationBtn">自動処理を実行</button>
+                  <button type="button" class="secondary" id="threadsGenerateDmOnlyBtn">DM候補だけ作成</button>
+                </div>
+                <div class="muted" id="threadsSimulationResult" style="margin-top:10px;">まだ実行していません。</div>
+              </div>
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">自動処理結果</div>
+                <div class="muted">一致したルール・公開返信・DM候補を確認できます。</div>
+                <div class="item" style="margin-top:12px;">
+                  <pre id="threadsAutomationPreview">ここに実行結果が表示されます。</pre>
+                </div>
+                <div class="threads-actions">
+                  <button type="button" class="secondary" id="threadsCopyAutomationReplyBtn">実行結果をコピー</button>
+                  <button type="button" class="secondary" id="threadsCopyAutomationDmBtn">DM候補をコピー</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="threads-tabpanel" id="threadsTab_monitor">
+            <div class="threads-grid-2">
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">投稿監視BOT</div>
+                <div class="muted">特定投稿を監視対象として保存し、後からCloudflare Workersの定期取得へつなげる前提の設定です。</div>
+                <label>監視名</label>
+                <input id="threadsMonitorName" placeholder="例：詳細誘導投稿A" />
+                <label>監視対象URL</label>
+                <input id="threadsMonitorUrl" placeholder="https://threads.net/t/..." />
+                <label>監視頻度</label>
+                <select id="threadsMonitorInterval">
+                  <option value="5">5分</option>
+                  <option value="10">10分</option>
+                  <option value="30">30分</option>
+                  <option value="60">60分</option>
+                </select>
+                <label>自動処理</label>
+                <select id="threadsMonitorMode">
+                  <option value="reply">コメント取得 + 条件返信</option>
+                  <option value="lead">コメント取得 + リード保存</option>
+                  <option value="full">コメント取得 + 条件返信 + DM候補</option>
+                </select>
+                <div class="btns">
+                  <button type="button" id="threadsSaveMonitorBtn">監視を保存</button>
+                </div>
+                <div class="feature-note">※ 今はローカル保存。後からWorkerのCronにそのまま渡せる形です。</div>
+              </div>
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">監視一覧</div>
+                <div class="muted">保存した監視設定の一覧です。</div>
+                <div id="threadsMonitorList" class="monitor-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="threads-tabpanel" id="threadsTab_export">
+            <div class="threads-grid-2">
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">リード出力</div>
+                <div class="muted">保存済みのリードをCSV/JSONで書き出せます。</div>
+                <div class="btns">
+                  <button type="button" id="threadsExportCsvBtn">CSV出力</button>
+                  <button type="button" class="secondary" id="threadsExportJsonBtn">JSON出力</button>
+                </div>
+                <div class="feature-note">DM候補・状態・コメント本文も含めてエクスポートされます。</div>
+              </div>
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">データ出力ログ</div>
+                <div class="muted">最近の書き出し履歴を表示します。</div>
+                <div id="threadsExportLog" class="export-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="threads-tabpanel" id="threadsTab_settings">
+            <div class="row">
+              <div class="card">
+                <label>クールダウン（分）</label>
+                <input id="threadsCooldown" type="number" min="0" value="60" />
+                <label>深夜停止</label>
+                <select id="threadsNightStop">
+                  <option value="on">ON</option>
+                  <option value="off">OFF</option>
+                </select>
+                <label>ログ保存件数</label>
+                <input id="threadsLogLimit" type="number" min="10" value="100" />
+                <div class="btns">
+                  <button type="button" id="threadsSaveSettingsBtn">設定保存</button>
+                </div>
+              </div>
+              <div class="card">
+                <div style="font-weight:800; margin-bottom:8px;">Threadsサマリー</div>
+                <div id="threadsSummary" class="muted">保存データを集計して表示します。</div>
+                <div id="threadsActivitySummary" class="threads-log" style="margin-top:12px;"></div>
+                <div class="btns" style="margin-top:12px;">
+                  <button class="secondary" type="button" id="threadsSeedDemoBtn">デモデータを入れる</button>
+                  <button class="secondary danger" type="button" id="threadsClearAllBtn">Threadsデータ全削除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="page-section" id="sectionSettings">
+        <div class="card">
+          <div class="page-title">
+            <div>
+              <h2>共通設定</h2>
+              <p class="muted">サービス横断で使う設定の置き場です。ライセンスや法務リンクをまとめます。</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="card">
+              <div style="font-weight:800; margin-bottom:8px;">共通で持つもの</div>
+              <div class="muted">ライセンス情報 / APIキー / 通知設定 / 共通プロフィール / 利用規約リンク</div>
+            </div>
+            <div class="card">
+              <div style="font-weight:800; margin-bottom:8px;">運用イメージ</div>
+              <div class="card" style="margin-top:12px;">
+                <div style="font-weight:800; margin-bottom:8px;">自動アップデート</div>
+                <div class="muted">最新バージョンの確認とリリースメモ保存に使う管理枠です。</div>
+                <label>現在バージョン</label>
+                <input id="hcCurrentVersion" value="v2.0.0" />
+                <label>最新リリースメモ</label>
+                <textarea id="hcReleaseNote" placeholder="アップデート内容を記録"></textarea>
+                <div class="btns">
+                  <button type="button" id="hcSaveVersionBtn">更新情報を保存</button>
+                  <button type="button" class="secondary" id="hcCheckVersionBtn">更新チェック</button>
+                </div>
+                <div id="hcVersionStatus" class="feature-note">まだ保存していません。</div>
+              </div>
+              <div class="muted">左メニューまたはハンバーガーで移動し、各サービスの中身だけ差し替えます。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+  <div class="stickybar" id="stickybar">
+    <div class="inner">
+      <button class="secondary" id="stickyShuffleBtn" type="button">シャッフル</button>
+      <button id="stickyGenerateBtn" type="button">生成</button>
+      <button class="secondary" id="stickyCopyAllBtn" type="button">全部コピー</button>
+    </div>
+  </div>
+
+
+    </main>
+  </div>
+
+  </div>
+
+<script>
+(async () => {
+  const $ = (id) => document.getElementById(id);
+
+  let LAST_POSTS = [];
+
+  // ---- License gate (server-verified)
+  // TODO: あなたのWorkers URLに差し替え
+  const LICENSE_API_BASE = "https://xpost-core.ssssqqqq255.workers.dev";
+
+ // ===== License storage keys =====
+const LS_KEY = "license_key";
+const LS_DEVICE = "license_device_id";
+const LS_EXPIRES = "license_expires_at";
+
+function getOrCreateDeviceId() {
+  let v = localStorage.getItem(LS_DEVICE);
+  if (!v) {
+    v = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + "_" + Math.random()));
+    localStorage.setItem(LS_DEVICE, v);
+  }
+  return v;
+}
+function calcRemainingText(expiresAt) {
+  if (!expiresAt) return "";
+  const exp = new Date(expiresAt).getTime();
+  const now = Date.now();
+  const diff = exp - now;
+  const days = Math.ceil(diff / 86400000);
+  if (!Number.isFinite(days)) return "";
+  if (days <= 0) return "（期限切れ）";
+  return `（残り${days}日）`;
+}
+
+function setLocked(isLocked, info = {}) {
+  document.body.classList.toggle("locked", isLocked);
+
+  const exp = info.expiresAt || localStorage.getItem(LS_EXPIRES) || "";
+  const remain = calcRemainingText(exp);
+
+  const st = document.getElementById("licenseStatus");
+  if (st) {
+    if (isLocked) {
+      st.textContent = "🔒 未認証";
+    } else {
+      st.textContent = exp
+        ? `✅ 認証済み（期限: ${exp.slice(0,10)}）${remain}`
+        : `✅ 認証済み${remain}`;
+    }
+  }
+
+  // Animation only (display is controlled by CSS for Safari stability)
+  const gate = document.getElementById("licenseGate");
+  const app = document.getElementById("appContainer");
+
+  if (gate) gate.classList.toggle("fade-out", !isLocked);
+  if (app) app.classList.toggle("fade-out", isLocked);
+}
+
+  function openLicenseModal(msg="") {
+    // Gate-first: show full-screen gate (no other UI)
+    const gm = document.getElementById("licenseMsg_gate");
+    if (gm) gm.textContent = msg;
+    setLocked(true);
+    const gi = document.getElementById("licenseKeyInput_gate");
+    if (gi) gi.focus();
+    // keep modal for compatibility, but don\'t rely on it
+    if ($("licenseMsg")) $("licenseMsg").textContent = msg;
+  }
+
+  function closeLicenseModal() {
+    $("licenseModal").style.display = "none";
+    $("licenseModal").setAttribute("aria-hidden", "true");
+    $("licenseMsg").textContent = "";
+  }
+
+ async function activateLicense(key) {
+  const deviceId = getOrCreateDeviceId();
+  const res = await fetch(`${LICENSE_API_BASE}/api/activate`, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ key, deviceId })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.message || "activate_failed");
+
+  // keyを保存（次回以降の自動認証に使う）
+  localStorage.setItem(LS_KEY, key);
+
+  // すぐ期限も取りに行く
+  const chk = await checkLicense();
+  if (!chk.ok) throw new Error(chk.reason || "check_failed_after_activate");
+  return chk;
+}
+
+async function checkLicense() {
+  const key = localStorage.getItem(LS_KEY);
+  if (!key) return { ok:false, reason:"no_key" };
+
+  const deviceId = getOrCreateDeviceId();
+  const res = await fetch(`${LICENSE_API_BASE}/api/check`, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ key, deviceId })
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) {
+    // 期限切れや不一致なら、必要ならここで消してもOK
+    // localStorage.removeItem(LS_KEY);
+    return { ok:false, reason:data.message || "invalid" };
+  }
+
+  // Workersは { ok:true, expires:"..." } を返す
+  const expiresAt = data.expiresAt || data.expires || "";
+  localStorage.setItem(LS_EXPIRES, expiresAt);
+
+  return { ok:true, expiresAt };
+}
+
+
+  // ---- default templates
+  const defaultTemplates = [
+    {
+      id: "t1",
+      name: "悩み→解決→行動",
+      text:
+`{{target}}。
+
+{{pain}}
+{{solution}}
+
+{{benefit}}{{cta}}
+{{tag}}`
+    },
+    {
+      id: "t2",
+      name: "共感→気づき→提案",
+      text:
+`「{{pain}}」って{{target}}ほど刺さる。
+
+実は{{insight}}。
+だから{{proposal}}。
+
+{{cta}}
+{{tag}}`
+    },
+    {
+      id: "t3",
+      name: "実績→理由→募集",
+      text:
+`{{result}}しました。
+
+理由はシンプルで、{{reason}}。
+同じように{{target}}を変えたい人は{{offer}}。
+
+{{cta}}
+{{tag}}`
+    }
+  ];
+
+  // ---- storage
+  const LS_TPL_KEY = "x_post_maker_templates_v1";
+  const LS_LAST = "x_post_maker_last_template_v1";
+
+  function loadTemplates() {
+    const raw = localStorage.getItem(LS_TPL_KEY);
+    if (!raw) return [...defaultTemplates];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) && parsed.length ? parsed : [...defaultTemplates];
+    } catch {
+      return [...defaultTemplates];
+    }
+  }
+
+  function saveTemplates(list) {
+    localStorage.setItem(LS_TPL_KEY, JSON.stringify(list));
+  }
+
+  let templates = loadTemplates();
+
+
+  // ---- Buzzword dictionary (plain localStorage)
+  const LS_BUZZ = "buzzwords_list_v1";
+  function loadBuzzwords() {
+    try {
+      const s = localStorage.getItem(LS_BUZZ) || "";
+      return s.split("\n").map(x => x.trim()).filter(Boolean);
+    } catch { return []; }
+  }
+  function saveBuzzwordsFromUI() {
+    const raw = $("buzzwords").value || "";
+    localStorage.setItem(LS_BUZZ, raw);
+    return loadBuzzwords();
+  }
+  function getBuzzRandom() {
+    const list = loadBuzzwords();
+    if (!list.length) return "";
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+
+  // ---- UI: template select
+  function refreshTemplateSelect(selectedId) {
+    const sel = $("templateSelect");
+    sel.innerHTML = "";
+    templates.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.id;
+      opt.textContent = t.name;
+      sel.appendChild(opt);
+    });
+    const last = localStorage.getItem(LS_LAST);
+    sel.value = selectedId || last || templates[0]?.id;
+  }
+
+  function currentTemplate() {
+    const id = $("templateSelect").value;
+    return templates.find(t => t.id === id) || templates[0];
+  }
+
+  // ---- vars extraction
+  function extractVars(text) {
+    const re = /\{\{\s*([a-zA-Z0-9_\-ぁ-んァ-ヶ一-龠]+)\s*\}\}/g;
+    const set = new Set();
+    let m;
+    while ((m = re.exec(text)) !== null) set.add(m[1]);
+    return [...set];
+  }
+
+  // Keep var candidates in memory + LS
+  const VAR_KEY = "x_post_maker_vars_v1";
+  function loadVarBank() {
+    try {
+      return JSON.parse(localStorage.getItem(VAR_KEY) || "{}") || {};
+    } catch { return {}; }
+  }
+  function saveVarBank(bank) {
+    localStorage.setItem(VAR_KEY, JSON.stringify(bank));
+  }
+  let varBank = loadVarBank();
+
+  function renderVars() {
+    const text = $("templateText").value;
+    const vars = extractVars(text);
+    const area = $("varsArea");
+    area.innerHTML = "";
+
+    if (vars.length === 0) {
+      area.innerHTML = `<div class="muted">テンプレ内に {{変数}} がありません。追加すると入力欄が出ます。</div>`;
+      return;
+    }
+
+    vars.forEach(v => {
+      const wrap = document.createElement("div");
+      wrap.style.marginTop = "10px";
+
+      const label = document.createElement("label");
+      label.textContent = `{{${v}}} の候補`;
+      wrap.appendChild(label);
+
+      const ta = document.createElement("textarea");
+      ta.id = `var_${v}`;
+      ta.placeholder = "1行=1候補。空行は無視";
+      ta.value = (varBank[v] || []).join("\n");
+      ta.addEventListener("input", () => {
+        varBank[v] = ta.value.split("\n").map(s => s.trim()).filter(Boolean);
+        saveVarBank(varBank);
+      });
+      ta.style.minHeight = "110px";
+      wrap.appendChild(ta);
+
+      area.appendChild(wrap);
+    });
+  }
+
+  // ---- generation
+  function cartesian(arrays) {
+    // arrays: [ [a,b], [c,d,e], ... ]
+    let res = [[]];
+    for (const arr of arrays) {
+      const next = [];
+      for (const r of res) for (const x of arr) next.push([...r, x]);
+      res = next;
+      if (res.length > 10000) break; // guard
+    }
+    return res;
+  }
+
+  function countXChars(text) {
+    // 簡易カウント（URL短縮などは考慮しない）
+    return (text || "").length;
+  }
+
+  
+function renderOutput(items){
+  const out = $('output');
+  out.innerHTML = '';
+  if(!items || !items.length){
+    out.innerHTML = '<div class="muted">出力がありません</div>';
+    return;
+  }
+
+  items.forEach((text, idx) => {
+    const card = document.createElement('div');
+    card.className = 'outCard';
+
+    const meta = document.createElement('div');
+    meta.className = 'outMeta';
+
+    const badge = document.createElement('span');
+    badge.className = 'outBadge';
+    badge.textContent = `#${idx+1}`;
+    meta.appendChild(badge);
+
+    const len = (text||'').length;
+    const remain = Math.max(0, 280 - len);
+    const count = document.createElement('span');
+    count.className = 'outCount';
+    count.textContent = `${len}文字（残り${remain}）`;
+    meta.appendChild(count);
+
+    card.appendChild(meta);
+
+    const body = document.createElement('div');
+    body.className = 'outText';
+    body.textContent = text || '';
+    card.appendChild(body);
+
+    const actions = document.createElement('div');
+    actions.className = 'outActions';
+
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'btn secondary';
+    btnCopy.textContent = 'コピー';
+    btnCopy.onclick = async () => {
+      try{
+        await navigator.clipboard.writeText(text || '');
+        if(typeof hcToast === 'function') hcToast('コピーしました', true);
+      }catch(e){
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = text || '';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        if(typeof hcToast === 'function') hcToast('コピーしました', true);
+      }
+    };
+    actions.appendChild(btnCopy);
+
+    const btnPost = document.createElement('button');
+    btnPost.className = 'btn primary';
+    btnPost.textContent = 'Xに投稿';
+    btnPost.onclick = () => {
+      const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text || '');
+      window.open(url, '_blank', 'noopener');
+      if(typeof hcToast === 'function') hcToast('投稿画面を開きました', true);
+    };
+    actions.appendChild(btnPost);
+
+    card.appendChild(actions);
+    out.appendChild(card);
+  });
+}
+
+
+function generatePosts({ shuffle=false } = {}) {
+    const tpl = $("templateText").value;
+    const vars = extractVars(tpl);
+    const maxGen = Math.max(1, Math.min(200, parseInt($("maxGen").value || "30", 10)));
+
+    // collect candidates
+    const candidates = {};
+    for (const v of vars) {
+      const ta = $(`var_${v}`);
+      const list = (ta?.value || "")
+        .split("\n").map(s => s.trim()).filter(Boolean);
+      candidates[v] = list;
+    }
+
+    // validate
+    const missing = vars.filter(v => !candidates[v] || candidates[v].length === 0);
+    if (missing.length) {
+      $("stats").textContent = `未入力の変数があります：${missing.map(v=>`{{${v}}}`).join(", ")}`;
+      renderOutput([]);
+      return;
+    }
+
+    // build combinations
+    const arrays = vars.map(v => candidates[v]);
+    let combos = cartesian(arrays); // list of arrays with chosen values
+    // convert to posts
+    let posts = combos.map(choiceArr => {
+      let s = tpl;
+      vars.forEach((v, i) => {
+        // replace all occurrences
+        const re = new RegExp("\\{\\{\\s*" + v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*\\}\\}", "g");
+        s = s.replace(re, choiceArr[i]);
+      });
+      // buzzword placeholder
+      s = s.replace(/\{\{\s*buzz\s*\}\}/g, () => getBuzzRandom());
+      return s.trim();
+    });
+
+    // optional shuffle
+    if (shuffle) {
+      for (let i = posts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [posts[i], posts[j]] = [posts[j], posts[i]];
+      }
+    }
+
+    posts = posts.slice(0, maxGen);
+    $("stats").textContent = `生成: ${posts.length}件 / 組み合わせ総数(概算): ${combos.length}件`;
+    renderOutput(posts);
+  }
+
+  // ---- copy all
+  async function copyAll() {
+    const items = [...$("output").querySelectorAll("pre")].map(p => p.textContent);
+    const all = items.join("\n\n---\n\n");
+    if (!all.trim()) return;
+    try {
+      await navigator.clipboard.writeText(all);
+      $("stats").textContent = "全部コピーしました（区切り：---）";
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = all;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      $("stats").textContent = "全部コピーしました（区切り：---）";
+    }
+  }
+
+  // ---- template CRUD
+  function loadTemplateToEditor(id) {
+    const t = templates.find(x => x.id === id) || templates[0];
+    $("templateText").value = t.text;
+    localStorage.setItem(LS_LAST, t.id);
+    renderVars();
+    generatePosts({ shuffle: false });
+  }
+
+  function saveCurrentTemplate() {
+    const id = $("templateSelect").value;
+    let t = templates.find(x => x.id === id);
+    if (!t) return;
+
+    const name = prompt("テンプレ名（一覧表示用）", t.name) ?? t.name;
+    t.name = name.trim() || t.name;
+    t.text = $("templateText").value;
+
+    saveTemplates(templates);
+    refreshTemplateSelect(t.id);
+    renderVars();
+    $("stats").textContent = "テンプレを保存しました";
+  }
+
+  function newTemplate() {
+    const name = prompt("新規テンプレ名", "新しいテンプレ") || "新しいテンプレ";
+    const id = "t" + Math.random().toString(16).slice(2);
+    const t = { id, name, text: `{{target}}へ。\n{{pain}}\n\n{{cta}}\n{{tag}}` };
+    templates.unshift(t);
+    saveTemplates(templates);
+    refreshTemplateSelect(t.id);
+    loadTemplateToEditor(t.id);
+    $("stats").textContent = "新規テンプレを作成しました";
+  }
+
+  function deleteTemplate() {
+    const id = $("templateSelect").value;
+    if (templates.length <= 1) {
+      $("stats").textContent = "テンプレは最低1つ必要です。";
+      return;
+    }
+    const t = templates.find(x => x.id === id);
+    if (!confirm(`「${t?.name || "このテンプレ"}」を削除しますか？`)) return;
+    templates = templates.filter(x => x.id !== id);
+    saveTemplates(templates);
+    refreshTemplateSelect(templates[0].id);
+    loadTemplateToEditor(templates[0].id);
+    $("stats").textContent = "削除しました";
+  }
+
+  // ---- export/import
+  function exportJSON() {
+    const payload = { templates, varBank };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "x_post_maker_backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importJSON(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const obj = JSON.parse(reader.result);
+        if (obj.templates && Array.isArray(obj.templates)) templates = obj.templates;
+        if (obj.varBank && typeof obj.varBank === "object") varBank = obj.varBank;
+
+        saveTemplates(templates);
+        saveVarBank(varBank);
+        refreshTemplateSelect(templates[0]?.id);
+        loadTemplateToEditor($("templateSelect").value);
+        $("stats").textContent = "読み込み完了";
+      } catch (e) {
+        $("stats").textContent = "読み込み失敗：JSONが壊れてるか形式が違います";
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ---- events
+  // ---- License init
+  // 起動時にチェックして、未認証ならロック（カード一式が操作できなくなる）
+  setLocked(true);
+  try {
+    const r = await checkLicense();
+    if (r.ok) {
+      setLocked(false, { expiresAt: r.expiresAt });
+    } else {
+      setLocked(true);
+    }
+  } catch {
+    setLocked(true);
+  }
+
+  $("openLicenseBtn").addEventListener("click", () => openLicenseModal());
+  $("closeLicenseBtn").addEventListener("click", closeLicenseModal);
+
+    // Gate UI (full screen) bindings
+  const gateInput = document.getElementById("licenseKeyInput_gate");
+  const gateMsg = document.getElementById("licenseMsg_gate");
+  const gateBtn = document.getElementById("activateBtn_gate");
+  if (gateBtn && gateInput) {
+    const doGateActivate = async () => {
+      const key = (gateInput.value || "").trim().toUpperCase();
+      gateMsg.textContent = "認証中...";
+      try {
+        const r = await activateLicense(key);
+        setLocked(false, { expiresAt: r.expiresAt });
+        gateMsg.textContent = "OK（認証済み）";
+      } catch (e) {
+        const msg = String(e?.message || e);
+        if (msg.includes("device_mismatch")) gateMsg.textContent = "このキーは別端末で使用中です（端末リセットが必要）";
+        else if (msg.includes("expired")) gateMsg.textContent = "期限切れです";
+        else if (msg.includes("revoked")) gateMsg.textContent = "失効済みです";
+        else if (msg.includes("invalid") || msg.includes("bad_request")) gateMsg.textContent = "キーが無効です";
+        else gateMsg.textContent = "認証失敗：" + msg;
+        setLocked(true);
+      }
+    };
+    gateBtn.addEventListener("click", doGateActivate);
+    gateInput.addEventListener("keydown", (ev) => { if (ev.key === "Enter") doGateActivate(); });
+  }
+
+$("activateBtn").addEventListener("click", async () => {
+    const key = ($("licenseKeyInput").value || "").trim().toUpperCase();
+    $("licenseMsg").textContent = "認証中...";
+    try {
+      const r = await activateLicense(key);
+      setLocked(false, { expiresAt: r.expiresAt });
+      $("licenseMsg").textContent = "OK（認証済み）";
+      setTimeout(closeLicenseModal, 500);
+    } catch (e) {
+      const msg = String(e?.message || e);
+      if (msg.includes("device_mismatch")) {
+        $("licenseMsg").textContent = "このキーは別端末で使用中です（端末リセットが必要）";
+      } else if (msg.includes("expired")) {
+        $("licenseMsg").textContent = "期限切れです";
+      } else if (msg.includes("revoked")) {
+        $("licenseMsg").textContent = "失効済みです";
+      } else if (msg.includes("invalid key")) {
+        $("licenseMsg").textContent = "キーが無効です";
+      } else {
+        $("licenseMsg").textContent = "認証失敗：" + msg;
+      }
+      setLocked(true);
+    }
+  });
+
+
+  refreshTemplateSelect();
+  loadTemplateToEditor($("templateSelect").value);
+
+  $("templateSelect").addEventListener("change", (e) => loadTemplateToEditor(e.target.value));
+  $("templateText").addEventListener("input", () => { renderVars(); });
+
+  $("generateBtn").addEventListener("click", () => generatePosts({ shuffle:false }));
+  $("shuffleBtn").addEventListener("click", () => generatePosts({ shuffle:true }));
+  $("copyAllBtn").addEventListener("click", copyAll);
+
+  $("saveTemplateBtn").addEventListener("click", saveCurrentTemplate);
+  $("newTemplateBtn").addEventListener("click", newTemplate);
+  $("deleteTemplateBtn").addEventListener("click", deleteTemplate);
+
+
+  // ---- buzzword UI
+  $("buzzwords").value = localStorage.getItem(LS_BUZZ) || "";
+  $("saveBuzzBtn").addEventListener("click", () => {
+    saveBuzzwordsFromUI();
+    alert("バズワード辞書を保存しました");
+  });
+  $("clearBuzzBtn").addEventListener("click", () => {
+    if (!confirm("辞書をクリアしますか？")) return;
+    $("buzzwords").value = "";
+    saveBuzzwordsFromUI();
+  });
+  $("insertBuzzBtn").addEventListener("click", () => {
+    const bw = getBuzzRandom();
+    if (!bw) { alert("辞書が空です"); return; }
+    const active = document.activeElement;
+    // templateText or any textarea in varsArea
+    const ta = (active && active.tagName === "TEXTAREA") ? active : $("templateText");
+    const start = ta.selectionStart ?? ta.value.length;
+    const end = ta.selectionEnd ?? ta.value.length;
+    ta.value = ta.value.slice(0, start) + bw + ta.value.slice(end);
+    ta.focus();
+    const pos = start + bw.length;
+    ta.setSelectionRange(pos, pos);
+  });
+
+  $("exportBtn").addEventListener("click", exportJSON);
+  $("importBtn").addEventListener("click", () => $("importFile").click());
+  $("importFile").addEventListener("change", (e) => {
+    const f = e.target.files?.[0];
+    if (f) importJSON(f);
+    e.target.value = "";
+  });
+
+  // ---- Service navigation (shared layout + page swap)
+  function setPage(pageId) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    const page = document.getElementById(pageId);
+    if (page) page.classList.add("active");
+
+    const sticky = document.getElementById("stickybar");
+    const isMain = pageId === "pageMain";
+    if (sticky) sticky.style.display = isMain ? "block" : "none";
+    document.body.classList.toggle("hasSticky", isMain);
+  }
+
+  function setSection(sectionId){
+    document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById(sectionId);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.app-navbtn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.section === sectionId);
+    });
+
+    if (sectionId === 'sectionX') setPage('pageMain');
+    else if (sectionId === 'sectionTelegram') setPage('pageTelegram');
+    else {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      const sticky = document.getElementById("stickybar");
+      if (sticky) sticky.style.display = 'none';
+      document.body.classList.remove('hasSticky');
+    }
+  }
+
+  const navButtons = document.querySelectorAll('.app-navbtn');
+  navButtons.forEach(btn => btn.addEventListener('click', () => {
+    setSection(btn.dataset.section);
+    closeMobileNav();
+  }));
+
+  const mobileNavToggle = document.getElementById('mobileNavToggle');
+  const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+  const mobileNavDrawer = document.getElementById('mobileNavDrawer');
+  const mobileNavClose = document.getElementById('mobileNavClose');
+  function openMobileNav(){
+    mobileNavOverlay?.classList.add('show');
+    mobileNavDrawer?.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMobileNav(){
+    mobileNavOverlay?.classList.remove('show');
+    mobileNavDrawer?.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+  mobileNavToggle?.addEventListener('click', openMobileNav);
+  mobileNavClose?.addEventListener('click', closeMobileNav);
+  mobileNavOverlay?.addEventListener('click', closeMobileNav);
+
+  // ---- Sticky bar wire-up (mirrors main buttons)
+  const stickyShuffleBtn = document.getElementById("stickyShuffleBtn");
+  const stickyGenerateBtn = document.getElementById("stickyGenerateBtn");
+  const stickyCopyAllBtn = document.getElementById("stickyCopyAllBtn");
+  if (stickyShuffleBtn) stickyShuffleBtn.addEventListener("click", () => $("shuffleBtn")?.click());
+  if (stickyGenerateBtn) stickyGenerateBtn.addEventListener("click", () => $("generateBtn")?.click());
+  if (stickyCopyAllBtn) stickyCopyAllBtn.addEventListener("click", () => $("copyAllBtn")?.click());
+
+  // ---- Accounts (plain localStorage, multiple)
+  const ACC_LS = "x_accounts_plain_v1";
+  let accEditingId = null;
+
+  const accEls = {
+    label: $("accLabel"),
+    xid: $("accXId"),
+    xpw: $("accXPw"),
+    mail: $("accMail"),
+    mailpw: $("accMailPw"),
+    mailpath: $("accMailPath"),
+    note: $("accNote"),
+    save: $("accSaveBtn"),
+    clear: $("accClearBtn"),
+    tbody: $("accTbody"),
+    list: $("accList"),
+    hint: $("accEditHint"),
+    count: $("accCount"),
+    hint: $("accEditHint"),
+    exportBtn: $("accExportBtn"),
+    importBtn: $("accImportBtn"),
+    importFile: $("accImportFile"),
+    csvImportBtn: $("accCsvImportBtn"),
+    csvFile: $("accCsvFile"),
+    csvExampleBtn: $("accCsvExampleBtn"),
+    delAll: $("accDeleteAllBtn"),
+  };
+
+  function loadAccounts() {
+    try {
+      const raw = localStorage.getItem(ACC_LS);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
+  }
+  function saveAccounts(arr) {
+    localStorage.setItem(ACC_LS, JSON.stringify(arr));
+  }
+  function uid() {
+    return (crypto.randomUUID ? crypto.randomUUID() : (String(Math.random()).slice(2) + Date.now()));
+  }
+  function mask(s) {
+    if (!s) return "";
+    return "•".repeat(Math.min(8, String(s).length));
+  }
+  async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("コピーしました");
+    } catch {
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      alert("コピーしました");
+    }
+  }
+
+  function accClearForm() {
+    accEditingId = null;
+    if (accEls.hint) accEls.hint.style.display = "none";
+    accEls.label.value = "";
+    accEls.xid.value = "";
+    accEls.xpw.value = "";
+    accEls.mail.value = "";
+    accEls.mailpw.value = "";
+    accEls.mailpath.value = "";
+    accEls.note.value = "";
+    if (accEls.hint) accEls.hint.textContent = "";
+  }
+
+  function renderAccounts() {
+    const arr = loadAccounts();
+    // legacy table (if any)
+    if (accEls.tbody) accEls.tbody.innerHTML = "";
+    if (accEls.list) accEls.list.innerHTML = "";
+
+    const safe = (s)=> String(s ?? "");
+    const dispName = (a)=>{
+      const n = safe(a.label).trim() || safe(a.xid).trim() || "アカウント";
+      return n;
+    };
+    const dispId = (a)=>{
+      const raw = safe(a.xid).trim();
+      if (!raw) return "";
+      return raw.startsWith("@") ? raw : ("@" + raw);
+    };
+
+    // build card list
+    arr.forEach(a=>{
+      const item = document.createElement("div");
+      item.className = "acc-item";
+      item.tabIndex = 0;
+
+      const main = document.createElement("div");
+      main.className = "acc-main";
+      main.style.minWidth = "0";
+
+      const name = document.createElement("div");
+      name.className = "acc-name";
+      name.textContent = dispName(a);
+
+      const sub = document.createElement("div");
+      sub.className = "acc-sub";
+      sub.textContent = dispId(a);
+
+      main.append(name, sub);
+
+      const pill = document.createElement("div");
+      pill.className = "acc-pill";
+      pill.textContent = "詳細";
+
+      item.append(main, pill);
+
+      const open = ()=> openAccountDetail(a.id);
+      item.addEventListener("click", open);
+      item.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); }});
+
+      if (accEls.list) accEls.list.appendChild(item);
+
+      // keep legacy table rows if table exists (optional)
+      if (accEls.tbody) {
+        const tr = document.createElement("tr");
+        const td1 = document.createElement("td");
+        td1.innerHTML = `<b>${dispName(a).replaceAll("<","&lt;")}</b><br><small>${dispId(a)}</small>`;
+        const td2 = document.createElement("td");
+        td2.innerHTML = `<small>${safe(a.mail)}</small>`;
+        const td3 = document.createElement("td");
+        td3.textContent = "-";
+        tr.append(td1, td2, td3);
+        accEls.tbody.appendChild(tr);
+      }
+    });
+
+    if (accEls.count) {
+      accEls.count.textContent = `保存数: ${arr.length}`;
+    }
+  }
+
+  // --- Account detail sheet ---
+  const accDetail = {
+    overlay: $("accDetailOverlay"),
+    sheet: $("accDetailSheet"),
+    title: $("accDetailTitle"),
+    body: $("accDetailBody"),
+    close: $("accDetailClose"),
+    use: $("accUseBtn"),
+    edit: $("accEditBtn"),
+    del: $("accDeleteBtn"),
+  };
+  let accDetailId = null;
+
+  function openAccountDetail(id){
+    const a = loadAccounts().find(x=>x.id===id);
+    if(!a) return;
+    accDetailId = id;
+
+    const name = (String(a.label||"").trim() || String(a.xid||"").trim() || "アカウント");
+    const xid = String(a.xid||"").trim();
+    accDetail.title.textContent = name;
+
+    const esc = (s)=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+    const kv = (k,v)=>`<b>${esc(k)}</b><span class="copyVal" data-copy="${esc(v)}">${esc(v)}</span>`;
+    accDetail.body.innerHTML = `
+      <div class="hc-kv">
+        ${kv("X ID", xid ? (xid.startsWith("@")?xid:"@"+xid) : "")}
+        ${kv("X パスワード", a.xpw||"")}
+        ${kv("メール", a.mail||"")}
+        ${kv("メール パスワード", a.mailpw||"")}
+        ${kv("メールパス", a.mailpath||"")}
+        ${kv("メモ", a.note||"")}
+      </div>
+      <div class="muted" style="margin-top:10px; font-size:12px;">※各項目をタップでコピーできます。</div>
+    `;
+
+    if(accDetail.overlay){
+      accDetail.overlay.classList.add("show");
+      accDetail.overlay.setAttribute("aria-hidden","false");
+    }
+  }
+  function closeAccountDetail(){
+    accDetailId = null;
+    if(accDetail.overlay){
+      accDetail.overlay.classList.remove("show");
+      accDetail.overlay.setAttribute("aria-hidden","true");
+    }
+  }
+
+  if (accDetail.close) accDetail.close.addEventListener("click", closeAccountDetail);
+  if (accDetail.overlay) accDetail.overlay.addEventListener("click", (e)=>{ if(e.target===accDetail.overlay) closeAccountDetail(); });
+
+  // --- Tap-to-copy in account detail sheet ---
+  function hcShowToast(msg){
+    let t = document.getElementById("hcCopyToast");
+    if(!t){
+      t = document.createElement("div");
+      t.id = "hcCopyToast";
+      t.style.cssText = "position:fixed;left:50%;bottom:22px;transform:translateX(-50%);padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(12,14,20,.92);color:#fff;font-weight:900;font-size:13px;letter-spacing:.02em;z-index:30000;opacity:0;pointer-events:none;transition:opacity .15s ease, transform .15s ease;backdrop-filter: blur(10px);-webkit-backdrop-filter: blur(10px);";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = "1";
+    t.style.transform = "translateX(-50%) translateY(0)";
+    clearTimeout(t._tm);
+    t._tm = setTimeout(()=>{ t.style.opacity="0"; t.style.transform="translateX(-50%) translateY(6px)"; }, 900);
+  }
+
+  async function hcCopyText(text){
+    const s = String(text ?? "");
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(s);
+        return true;
+      }
+    }catch(e){}
+    try{
+      const ta = document.createElement("textarea");
+      ta.value = s;
+      ta.setAttribute("readonly","");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return !!ok;
+    }catch(e){}
+    return false;
+  }
+
+  if (accDetail.body) {
+    accDetail.body.addEventListener("click", async (e)=>{
+      const el = e.target && e.target.closest ? e.target.closest(".copyVal") : null;
+      if(!el) return;
+      const v = el.getAttribute("data-copy") || el.textContent || "";
+      const ok = await hcCopyText(v);
+      hcShowToast(ok ? "コピーしました" : "コピー失敗");
+      try{ el.animate([{transform:"scale(1)"},{transform:"scale(.98)"},{transform:"scale(1)"}], {duration:140}); }catch(_){}
+    });
+  }
+
+
+  // Use: store as "active" for future features + toast
+  const ACC_ACTIVE_LS = "x_accounts_active_id";
+  if (accDetail.use) accDetail.use.addEventListener("click", ()=>{
+    if(!accDetailId) return;
+    localStorage.setItem(ACC_ACTIVE_LS, accDetailId);
+    toast("このアカウントを選択しました");
+    closeAccountDetail();
+  });
+
+  // Edit: fill form and open registration accordion
+  if (accDetail.edit) accDetail.edit.addEventListener("click", ()=>{
+    if(!accDetailId) return;
+    const a = loadAccounts().find(x=>x.id===accDetailId);
+    if(!a) return;
+
+    accEditingId = a.id;
+    accEls.label.value = a.label || "";
+    accEls.xid.value = a.xid || "";
+    accEls.xpw.value = a.xpw || "";
+    accEls.mail.value = a.mail || "";
+    accEls.mailpw.value = a.mailpw || "";
+    accEls.mailpath.value = a.mailpath || "";
+    accEls.note.value = a.note || "";
+    if (accEls.hint) accEls.hint.style.display = "block";
+
+    // open first details (registration)
+    const reg = document.querySelector('#drawerTab_acc details.hc-acc');
+    if(reg && reg.open===false) reg.open = true;
+
+    toast("編集フォームに読み込みました");
+    closeAccountDetail();
+  });
+
+  // Delete
+  if (accDetail.del) accDetail.del.addEventListener("click", ()=>{
+    if(!accDetailId) return;
+    if (!confirm("このアカウントを削除しますか？")) return;
+    const arr2 = loadAccounts().filter(x=>x.id!==accDetailId);
+    saveAccounts(arr2);
+    if (accEditingId === accDetailId) accClearForm();
+    renderAccounts();
+    toast("削除しました");
+    closeAccountDetail();
+  });
+
+
+  if (accEls.save) accEls.save.addEventListener("click", () => {
+    const label = accEls.label.value.trim();
+    const xid = accEls.xid.value.trim();
+    const xpw = accEls.xpw.value;
+    const mail = accEls.mail.value.trim();
+    const mailpw = accEls.mailpw.value;
+    const mailpath = accEls.mailpath.value.trim();
+    const note = accEls.note.value;
+
+    const arr = loadAccounts();
+    if (accEditingId) {
+      const idx = arr.findIndex(x => x.id === accEditingId);
+      if (idx >= 0) {
+        arr[idx] = { ...arr[idx], label, xid, xpw, mail, mailpw, mailpath, note, updatedAt: new Date().toISOString() };
+      }
+    } else {
+      arr.unshift({ id: uid(), label, xid, xpw, mail, mailpw, mailpath, note, createdAt: new Date().toISOString() });
+    }
+    saveAccounts(arr);
+    accClearForm();
+    renderAccounts();
+    alert("保存しました");
+  });
+
+  if (accEls.clear) accEls.clear.addEventListener("click", accClearForm);
+
+  
+    // ===== CSV/TSV import for accounts (Spreadsheet) =====
+    function hcParseDelimited(text){
+  const t = String(text||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim();
+  if(!t) return { rows: [], warnings: [] };
+
+  // detect delimiter
+  const firstLine = t.split("\n")[0] || "";
+  const delim = (firstLine.split("\t").length > firstLine.split(",").length) ? "\t" : ",";
+
+  const lines = t.split("\n").filter(l => l.trim().length > 0);
+  const raw = lines.map(line => {
+    // naive split (good enough for typical spreadsheets export)
+    return line.split(delim).map(x => String(x ?? "").trim());
+  });
+
+  const warnings = [];
+  const hasHeader = raw.length >= 2 && raw[0].some(h => /[A-Za-z_]/.test(h)) && !raw[0].every(h => /^\d+$/.test(h));
+  const header = hasHeader ? raw[0].map(h => (h||"").trim().toLowerCase()) : null;
+
+  // Our expected column order (when headerless). We "pack" values by removing NODATA/empty cells first.
+  const DEFAULT_COLS = ["label","xid","xp","mail","mp","memo"];
+
+  const dataLines = hasHeader ? raw.slice(1) : raw;
+  const rows = [];
+
+  for(const cells of dataLines){
+    if(hasHeader){
+      const obj = {};
+      for(let c=0;c<header.length;c++){
+        const key = header[c] || "";
+        if(!key) continue;
+        const v = cleanValue(cells[c]);
+        if(v !== undefined) obj[key] = v;
+      }
+      rows.push(removeUndefinedFields(obj));
+    }else{
+      const packed = cells.map(cleanValue).filter(v => v !== undefined);
+      const obj = {};
+      for(let i=0;i<DEFAULT_COLS.length;i++){
+        const v = packed[i];
+        if(v !== undefined) obj[DEFAULT_COLS[i]] = v;
+      }
+      rows.push(removeUndefinedFields(obj));
+    }
+  }
+
+  return { rows, warnings };
+}
+
+
+    function hcMapAccountRow(row) {
+      const get = (...keys) => {
+        for (const k of keys) {
+          if (row[k] != null && String(row[k]).trim() !== "") return String(row[k]).trim();
+          const foundKey = Object.keys(row).find(x => x.toLowerCase() === String(k).toLowerCase());
+          if (foundKey && String(row[foundKey]).trim() !== "") return String(row[foundKey]).trim();
+        }
+        return "";
+      };
+      const label = cleanValue(get("label","ラベル","name","名称","アカウント名","account","acct"));
+
+    const x_id  = cleanValue(get(
+      "x_id","xid","screen","X ID","x","id",
+      "ユーザー","user","ユーザーID","ユーザー名",
+      "アカウント","account_id","x_account"
+    ));
+
+    const x_pass= cleanValue(get(
+      "x_pass","xpass","password","X PASS",
+      "pass","パス","パスワード","Xパスワード"
+    ));
+
+    const mail  = cleanValue(get(
+      "mail","email","メール","メールアドレス","mail_addr","email_addr"
+    ));
+
+    const mail_pass = cleanValue(get(
+      "mail_pass","mailpass","mailpw",
+      "メールパス","メールパスワード","mail_password","email_password"
+    ));
+
+    const reg_number = cleanValue(get(
+      "reg_number","reg","登録番号","regno","registration","registration_number"
+    ));
+
+    const auth = cleanValue(get(
+      "auth","認証","認証コード","auth_code","authcode"
+    ));
+
+    const twofa_link = cleanValue(get(
+      "2FA_link","2fa_link","2fa","otp_link","twofa","twofa_link"
+    ));
+
+    const backup_code = cleanValue(get(
+      "backupcode","backup_code","backup","backup_codes","backupcodes"
+    ));
+
+    const memo  = cleanValue(get("memo","note","備考","メモ"));
+
+    const normalized = {
+      label: label || (x_id ? `@${x_id}` : ""),
+      x_id, x_pass, mail, mail_pass,
+      reg_number, auth, twofa_link, backup_code,
+      memo
+    };
+      for (const k of Object.keys(normalized)) {
+        if (normalized[k] === "-" || normalized[k] === "—") normalized[k] = "";
+      }
+      return normalized;
+    }
+
+    function hcImportAccountsFromRows(rows) {
+      const list = hcLoadAccounts();
+      let added = 0, updated = 0, skipped = 0;
+
+      const findIndex = (acct) => {
+        const key = (acct.x_id || "").toLowerCase();
+        if (!key) return -1;
+        return list.findIndex(a => (a.x_id || "").toLowerCase() === key);
+      };
+
+      for (const r of rows) {
+        const acct = hcMapAccountRow(r);
+        const meaningful = (acct.x_id || acct.mail || acct.label).trim() !== "";
+        if (!meaningful) { skipped++; continue; }
+
+        const idx = findIndex(acct);
+        if (idx >= 0) {
+          const cur = list[idx];
+          if (acct.label) cur.label = acct.label;
+          if (acct.x_pass) cur.x_pass = acct.x_pass;
+          if (acct.mail) cur.mail = acct.mail;
+          if (acct.mail_pass) cur.mail_pass = acct.mail_pass;
+          if (acct.memo) cur.memo = acct.memo;
+        if (acct.reg_number) cur.reg_number = acct.reg_number;
+        if (acct.auth) cur.auth = acct.auth;
+        if (acct.twofa_link) cur.twofa_link = acct.twofa_link;
+        if (acct.backup_code) cur.backup_code = acct.backup_code;
+          updated++;
+        } else {
+          if (!acct.x_id) { skipped++; continue; }
+          list.push({
+            id: "acc_" + Math.random().toString(16).slice(2) + Date.now().toString(16),
+            label: acct.label || `@${acct.x_id}`,
+            x_id: acct.x_id,
+            x_pass: acct.x_pass || "",
+            mail: acct.mail || "",
+            mail_pass: acct.mail_pass || "",
+            memo: acct.memo || ""
+          });
+          added++;
+        }
+      }
+
+      hcSaveAccounts(list);
+      hcRenderAccountsList();
+      hcToast(`CSV取込: 追加 ${added} / 更新 ${updated} / スキップ ${skipped}`, (added || updated) ? "success" : "info");
+      return { added, updated, skipped };
+    }
+if (accEls.exportBtn) accEls.exportBtn.addEventListener("click", () => {
+    const data = localStorage.getItem(ACC_LS) || "[]";
+    const blob = new Blob([data], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "x_accounts.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  if (accEls.importBtn && accEls.importFile) {
+    accEls.importBtn.addEventListener("click", () => accEls.importFile.click());
+    accEls.importFile.addEventListener("change", async (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      const txt = await f.text();
+      try {
+        const arr = JSON.parse(txt);
+        if (!Array.isArray(arr)) throw new Error("invalid");
+        // ensure ids
+        const normalized = arr.map(a => ({
+          id: a.id || uid(),
+          label: a.label || "",
+          xid: a.xid || "",
+          xpw: a.xpw || "",
+          mail: a.mail || "",
+          mailpw: a.mailpw || "",
+          mailpath: a.mailpath || "",
+          note: a.note || "",
+          createdAt: a.createdAt || new Date().toISOString(),
+        }));
+        saveAccounts(normalized);
+        renderAccounts();
+        alert("インポートしました");
+      } catch {
+        alert("JSONが不正です");
+      } finally {
+        accEls.importFile.value = "";
+      }
+    });
+  }
+
+
+  if (accEls.csvImportBtn && accEls.csvFile) {
+    accEls.csvImportBtn.addEventListener("click", () => accEls.csvFile.click());
+    accEls.csvFile.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        let text = "";
+        const name = (file.name || "").toLowerCase();
+        if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+          if (typeof XLSX === "undefined") {
+            hcToast("XLSX読み込みライブラリが未読込です。CSVで保存して読み込んでください。", "warn");
+            return;
+          }
+          const buf = await file.arrayBuffer();
+          const wb = XLSX.read(buf, { type: "array" });
+          const sheetName = wb.SheetNames[0];
+          const ws = wb.Sheets[sheetName];
+          // Convert to CSV to reuse the same parser
+          text = XLSX.utils.sheet_to_csv(ws);
+        } else {
+          text = await file.text();
+        }
+
+        const parsed = hcParseDelimited(text);
+        if (!parsed.rows.length) {
+          hcToast("CSVにデータが見つかりませんでした", "warn");
+        } else {
+          hcImportAccountsFromRows(parsed.rows);
+        }
+      } catch (err) {
+        console.error(err);
+        hcToast("CSV読込に失敗しました", "error");
+      } finally {
+        e.target.value = "";
+      }
+    });
+  }
+
+  if (accEls.csvExampleBtn) {
+    accEls.csvExampleBtn.addEventListener("click", async () => {
+      const sample = [
+        "label,x_id,x_pass,mail,mail_pass,memo",
+        "main,example_id,example_pass,example@mail.com,mail_pass,メモ",
+        "sub,another_id,pass2,,,",
+      ].join("\n");
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(sample);
+          hcToast("CSV例をコピーしました（スプレッドシートに貼り付けOK）", "success");
+        } else {
+          // fallback
+          const ta = document.createElement("textarea");
+          ta.value = sample;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          hcToast("CSV例をコピーしました", "success");
+        }
+      } catch (e) {
+        hcToast("コピーできませんでした", "warn");
+      }
+    });
+  }
+
+
+  if (accEls.delAll) accEls.delAll.addEventListener("click", () => {
+    if (!confirm("保存しているアカウントを全削除しますか？")) return;
+    localStorage.removeItem(ACC_LS);
+    accClearForm();
+    renderAccounts();
+  });
+
+  // 初期表示
+  renderAccounts();
+  setPage("pageMain");
+
+})();
+
+
+
+
+
+</script>
+
+<script>
+// ===== Startup Overlay Controller (A) =====
+(function(){
+  const ov = document.getElementById('startupOverlay');
+  if(!ov) return;
+
+  function hide(){
+    if(ov.classList.contains('hide')) return;
+    ov.classList.add('hide');
+    setTimeout(()=>{ try{ ov.remove(); }catch(e){} }, 650);
+  }
+
+  // Auto-hide after 1.2s (stable)
+  setTimeout(hide, 2000);
+
+  // Hook common unlock functions if they exist
+  ['unlockApp','showApp','enterApp'].forEach(fnName=>{
+    const orig = window[fnName];
+    if(typeof orig === 'function'){
+      window[fnName] = function(){
+        const r = orig.apply(this, arguments);
+        hide();
+        return r;
+      };
+    }
+  });
+})();
+</script>
+
+
+<!-- ===== License & Updates Modal ===== -->
+<div id="infoModal" class="hcModal" aria-hidden="true">
+  <div class="hcModalBackdrop" data-close="1"></div>
+  <div class="hcModalPanel" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+    <div class="hcModalHeader">
+      <div id="infoModalTitle" class="hcModalTitle">ライセンス情報 / アップデート</div>
+      <button class="hcModalClose" type="button" data-close="1" aria-label="閉じる">✕</button>
+    </div>
+
+    <div class="hcModalBody">
+      <div class="hcInfoGrid">
+        <div class="hcInfoCard">
+          <div class="hcInfoLabel">状態</div>
+          <div class="hcInfoValue" id="hcLicStatus">未認証</div>
+        </div>
+        <div class="hcInfoCard">
+          <div class="hcInfoLabel">期限</div>
+          <div class="hcInfoValue" id="hcLicExpiry">-</div>
+        </div>
+        <div class="hcInfoCard">
+          <div class="hcInfoLabel">残り</div>
+          <div class="hcInfoValue" id="hcLicRemain">-</div>
+        </div>
+        <div class="hcInfoCard">
+          <div class="hcInfoLabel">キー</div>
+          <div class="hcInfoValue mono" id="hcLicKey">-</div>
+        </div>
+        <div class="hcInfoCard">
+          <div class="hcInfoLabel">端末ID</div>
+          <div class="hcInfoValue mono" id="hcDeviceId">-</div>
+        </div>
+      </div>
+
+      <div class="hcSection">
+        <div class="hcSectionTitle">アップデート内容</div>
+        <div class="hcChangelog" id="hcChangelog">
+          <div class="hcChangelogItem">
+            <div class="hcChangelogVer">v1.0</div>
+            <div class="hcChangelogTxt">ライセンス認証 / 期限表示 / 管理パネル / 投稿生成 / アカウント保存 / Telegram / 予約投稿</div>
+          </div>
+          <div class="hcChangelogItem">
+            <div class="hcChangelogVer">v1.1</div>
+            <div class="hcChangelogTxt">起動ロゴ、ヘッダー脈動、PCアクティベート安定化、D1構造修正</div>
+          </div>
+        </div>
+        <div class="hcHint"></div>
+      </div>
+
+      <div class="hcModalActions">
+        <button type="button" class="btn secondary" id="hcReauthBtn">ライセンス再認証</button>
+        <button type="button" class="btn primary" data-close="1">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+// ===== License Button -> Info Modal (Stable v2) =====
+(function(){
+  const modal = document.getElementById('infoModal');
+  if(!modal) return;
+
+  function getStoredJSON(key){
+    try{
+      const v = localStorage.getItem(key);
+      if(!v) return null;
+      return JSON.parse(v);
+    }catch(e){ return null; }
+  }
+
+  // Try multiple keys (old/new builds)
+  function getLicense(){
+    return (
+      getStoredJSON('licenseData') ||
+      getStoredJSON('hc_licenseData') ||
+      getStoredJSON('hypercore_licenseData') ||
+      getStoredJSON('license_info') ||
+      null
+    );
+  }
+
+  function getDeviceId(){
+    return (
+      localStorage.getItem('deviceId') ||
+      localStorage.getItem('licenseDeviceId') ||
+      localStorage.getItem('hc_deviceId') ||
+      '-'
+    );
+  }
+
+  function maskKey(k){
+    if(!k) return '-';
+    k = String(k).trim();
+    if(k.length >= 19) return k.slice(0,4) + "-****-****-" + k.slice(-4);
+    if(k.length >= 8) return k.slice(0,4) + "****" + k.slice(-2);
+    return k;
+  }
+
+  function calcRemainDays(expRaw){
+    const exp = new Date(expRaw);
+    if(isNaN(exp.getTime())) return null;
+    const now = new Date();
+    const ms = exp.getTime() - now.getTime();
+    return { exp, ms, days: Math.max(0, Math.ceil(ms / 86400000)) };
+  }
+
+  
+
+function openModal(){
+    // Populate license info (robust scan + header parse)
+    const statusEl = document.getElementById('hcLicStatus');
+    const expEl = document.getElementById('hcLicExpiry');
+    const remEl = document.getElementById('hcLicRemain');
+    const keyEl = document.getElementById('hcLicKey');
+    const devEl = document.getElementById('hcDeviceId');
+
+    if(devEl) devEl.textContent = getDeviceId();
+
+    // Helper: parse info from visible header/badge text like:
+    // "認証済み（期限: 2026-03-30）（残り30日）"
+    function parseFromPageText(){
+      const txt = (document.body && document.body.innerText) ? document.body.innerText : "";
+      const ok = txt.includes("認証済み");
+      const mExp = txt.match(/期限[:：]\s*([0-9]{4}[-\/][0-9]{2}[-\/][0-9]{2})/);
+      const mRem = txt.match(/残り\s*([0-9]+)\s*日/);
+      return {
+        ok,
+        exp: mExp ? mExp[1] : null,
+        rem: mRem ? mRem[1] : null
+      };
+    }
+
+    function scanLocalStorageForLicense(){
+      // Look for any JSON object containing expires fields / key
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(!k) continue;
+        const v = localStorage.getItem(k);
+        if(!v || v.length < 2) continue;
+        const first = v[0];
+        if(first !== '{' && first !== '[') continue;
+        try{
+          const obj = JSON.parse(v);
+          if(obj && typeof obj === 'object'){
+            const expRaw = obj.expires_at || obj.expiresAt || obj.expires || obj.exp || obj.expiry;
+            const key = obj.key || obj.licenseKey;
+            if(expRaw || key){
+              return { obj, expRaw, key, storageKey: k };
+            }
+          }
+        }catch(e){}
+      }
+      return null;
+    }
+
+    // Primary: known keys
+    let lic = getLicense();
+    let expRaw = lic ? (lic.expires_at || lic.expiresAt || lic.expires || lic.exp || lic.expiry) : null;
+    let k = lic ? (lic.key || lic.licenseKey) : null;
+
+    // Secondary: scan storage
+    if(!lic || (!expRaw && !k)){
+      const found = scanLocalStorageForLicense();
+      if(found){
+        lic = found.obj;
+        expRaw = found.expRaw || expRaw;
+        k = found.key || k;
+      }
+    }
+
+    // Also allow separate stored fields
+    if(!expRaw){
+      expRaw = localStorage.getItem('expires_at') || localStorage.getItem('expiresAt') || localStorage.getItem('licenseExpiresAt') || localStorage.getItem('hc_expiresAt') || null;
+    }
+    if(!k){
+      k = localStorage.getItem('licenseKey') || localStorage.getItem('key') || localStorage.getItem('hc_licenseKey') || null;
+    }
+
+    // Default render
+    if(statusEl) statusEl.textContent = "未認証";
+    if(expEl) expEl.textContent = "-";
+    if(remEl) remEl.textContent = "-";
+    if(keyEl) keyEl.textContent = k ? maskKey(k) : "（保存なし）";
+
+    // Determine status by expiry if available, else by presence of key/flag/header
+    let decided = false;
+
+    if(expRaw){
+      const r = calcRemainDays(expRaw);
+      if(r){
+        const ok = r.ms > 0 && !(lic && (lic.revoked || lic.is_revoked));
+        if(statusEl) statusEl.textContent = ok ? "認証済み" : "期限切れ";
+        if(expEl) expEl.textContent = r.exp.toLocaleDateString('ja-JP');
+        if(remEl) remEl.textContent = r.days + "日";
+        decided = true;
+      } else {
+        // Can't parse date but we have something => treat as authenticated
+        if(statusEl) statusEl.textContent = "認証済み";
+        if(expEl) expEl.textContent = String(expRaw);
+        decided = true;
+      }
+    }
+
+    if(!decided){
+      const flag = localStorage.getItem('hcLicensed') || localStorage.getItem('licensed') || '';
+      if((k && k.length >= 8) || flag === 'true'){
+        if(statusEl) statusEl.textContent = "認証済み";
+        decided = true;
+      }
+    }
+
+    // Final fallback: parse from what user actually sees on the page
+    if(!decided){
+      const p = parseFromPageText();
+      if(p.ok){
+        if(statusEl) statusEl.textContent = "認証済み";
+        if(p.exp && expEl) expEl.textContent = p.exp.replace(/\//g,'-');
+        if(p.rem && remEl) remEl.textContent = p.rem + "日";
+      }
+    }
+
+    modal.classList.add('show');
+
+
+    
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(){
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+
+  // Close handlers
+  modal.addEventListener('click', (e)=>{
+    const t = e.target;
+    if(t && t.dataset && t.dataset.close){ closeModal(); }
+  });
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+  });
+
+  // Reauth button: open license panel (if exists)
+  const reauth = document.getElementById('hcReauthBtn');
+  function hcToast(msg, ok){
+    try{
+      let t = document.getElementById('hcToast');
+      if(!t){
+        t = document.createElement('div');
+        t.id = 'hcToast';
+        t.style.position='fixed';
+        t.style.left='50%';
+        t.style.bottom='24px';
+        t.style.transform='translateX(-50%)';
+        t.style.zIndex='99999';
+        t.style.padding='10px 14px';
+        t.style.borderRadius='14px';
+        t.style.fontSize='14px';
+        t.style.backdropFilter='blur(10px)';
+        t.style.webkitBackdropFilter='blur(10px)';
+        t.style.boxShadow='0 10px 30px rgba(0,0,0,.35)';
+        t.style.border='1px solid rgba(255,255,255,.18)';
+        t.style.background= ok ? 'rgba(32, 180, 120, .22)' : 'rgba(220, 80, 80, .22)';
+        t.style.color='rgba(255,255,255,.92)';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.opacity='0';
+      t.style.transition='opacity .18s ease';
+      requestAnimationFrame(()=>{ t.style.opacity='1'; });
+      clearTimeout(t._tm);
+      t._tm = setTimeout(()=>{ t.style.opacity='0'; }, 1800);
+    }catch(e){}
+  }
+
+  async function hcRevalidate(){
+    const key = (localStorage.getItem('licenseKey')||'').trim().toUpperCase();
+    const deviceId = localStorage.getItem('hc_deviceId') || localStorage.getItem('deviceId') || '';
+    if(!key){
+      hcToast('ライセンスキーが保存されてません。ライセンス画面で入力してね。', false);
+      return { ok:false, message:'no_key' };
+    }
+    try{
+      const res = await fetch(`${LICENSE_API_BASE}/validate`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ key, deviceId })
+      });
+      const data = await res.json().catch(()=>null);
+      if(data && data.ok){
+        const exp = data.expires_at || data.expiresAt || data.expires || null;
+        if(exp){
+          localStorage.setItem('hc_expiresAt', exp);
+          localStorage.setItem('hcLicensed','true');
+        }
+        // keep a copy for future
+        localStorage.setItem('hc_lastLicenseResp', JSON.stringify(data));
+        // also mirror to common key names some builds use
+        try{ localStorage.setItem('licenseData', JSON.stringify({ ...data, key })); }catch(e){}
+        return { ok:true, data };
+      }
+      return { ok:false, message: (data && (data.message||data.error)) || ('status_'+res.status) };
+    }catch(e){
+      return { ok:false, message:'fetch_failed' };
+    }
+  }
+
+  if(reauth){
+    reauth.addEventListener('click', async ()=>{
+      reauth.disabled = true;
+      const prev = reauth.textContent;
+      reauth.textContent = '再認証中…';
+      const r = await hcRevalidate();
+      if(r.ok){
+        hcToast('再認証OK', true);
+        closeModal();
+        setTimeout(()=>{ location.reload(); }, 350);
+      }else{
+        hcToast('再認証失敗: ' + r.message, false);
+      }
+      reauth.textContent = prev || 'ライセンス再認証';
+      reauth.disabled = false;
+    });
+  }
+
+  // Find the top-right button reliably
+  function findTopButton(){
+    let btn =
+      document.getElementById('licenseBtn') ||
+      document.getElementById('btnLicense') ||
+      document.querySelector('button[data-action="license"]') ||
+      null;
+
+    if(!btn){
+      btn = Array.from(document.querySelectorAll('button, a')).find(el => {
+        const t = (el.textContent||'').trim();
+        return t === 'ライセンス認証' || t === '情報';
+      }) || null;
+    }
+    return btn;
+  }
+
+  function ensureLabel(btn){
+    if(!btn) return;
+    try{ btn.textContent = '情報'; }catch(e){}
+    btn.setAttribute('data-hc-info', '1');
+    btn.style.pointerEvents = 'auto';
+  }
+
+  // Capture-click interceptor (prevents old handlers from firing on reload)
+  document.addEventListener('click', (e)=>{
+    const btn = findTopButton();
+    if(btn) ensureLabel(btn);
+
+    const target = e.target;
+    if(!target) return;
+
+    // If clicking the info button (or inside it)
+    if(btn && (target === btn || (btn.contains && btn.contains(target)))){
+      e.preventDefault();
+      e.stopPropagation();
+      // stopImmediatePropagation might fail in some browsers; guard
+      try{ e.stopImmediatePropagation(); }catch(err){}
+      openModal();
+      return;
+    }
+  }, true); // capture phase
+
+  // Try initial label update (in case no click yet)
+  function init(){
+    // Prevent Safari from restoring a weird scroll position on reload/back-forward
+    try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
+    // Always start at top on open (especially on iOS Safari)
+    requestAnimationFrame(()=>window.scrollTo(0,0));
+    setTimeout(()=>window.scrollTo(0,0), 80);
+
+    const btn = findTopButton();
+    if(btn) ensureLabel(btn);
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  }else{
+    init();
+  }
+  setTimeout(init, 600);
+
+})();
+</script>
+
+
+
+<script>
+// ===== Fetch hook to persist license summary =====
+(function(){
+  if(!window.fetch) return;
+  const origFetch = window.fetch.bind(window);
+  window.fetch = async function(input, init){
+    const res = await origFetch(input, init);
+    try{
+      const url = (typeof input === 'string') ? input : (input && input.url) ? input.url : '';
+      if(url && /xpost-core\./.test(url) && /(\/activate|\/validate)/.test(url)){
+        const clone = res.clone();
+        const data = await clone.json().catch(()=>null);
+        if(data && data.ok){
+          const exp = data.expires_at || data.expiresAt || data.expires || null;
+          if(exp){
+            localStorage.setItem('hc_expiresAt', exp);
+            localStorage.setItem('hcLicensed', 'true');
+          }
+          localStorage.setItem('hc_lastLicenseResp', JSON.stringify(data));
+        }
+      }
+    }catch(e){}
+    return res;
+  };
+})();
+</script>
+
+
+<script>
+// ===== Capture license key input =====
+(function(){
+  function isKeyLike(v){
+    if(!v) return false;
+    v = String(v).trim().toUpperCase();
+    return /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(v);
+  }
+  function hook(){
+    const inputs = Array.from(document.querySelectorAll('input')).filter(inp=>{
+      const ph = (inp.getAttribute('placeholder')||'').toUpperCase();
+      const id = (inp.id||'').toLowerCase();
+      const nm = (inp.name||'').toLowerCase();
+      return ph.includes('XXXX') || id.includes('license') || nm.includes('license') || id.includes('key') || nm.includes('key');
+    });
+    inputs.forEach(inp=>{
+      if(inp.dataset.hcHooked) return;
+      inp.dataset.hcHooked = '1';
+      inp.addEventListener('input', ()=>{
+        const v = inp.value || '';
+        if(isKeyLike(v)){
+          try{ localStorage.setItem('licenseKey', v.toUpperCase()); }catch(e){}
+        }
+      });
+      inp.addEventListener('change', ()=>{
+        const v = inp.value || '';
+        if(isKeyLike(v)){
+          try{ localStorage.setItem('licenseKey', v.toUpperCase()); }catch(e){}
+        }
+      });
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hook);
+  else hook();
+  setInterval(hook, 1000);
+})();
+
+  // --- Post Settings Modal wiring (v9) ---
+  (function(){
+    function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+    ready(function(){
+      var modal = document.getElementById('postSettingsModal');
+      var body = document.getElementById('postSettingsBody');
+      var block = document.getElementById('postSettingsBlock');
+      var openBtn = document.getElementById('openPostSettingsBtn');
+      var close1 = document.getElementById('closePostSettingsBtn');
+      var close2 = document.getElementById('closePostSettingsBtn2');
+
+      if(modal && body && block){
+        // move settings UI into modal (keeps existing IDs + logic)
+        body.appendChild(block);
+        block.style.display = 'block';
+      }
+
+      function open(){
+        if(!modal) return;
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden','false');
+        document.documentElement.style.overflow = 'hidden';
+      }
+      function close(){
+        if(!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden','true');
+        document.documentElement.style.overflow = '';
+      }
+
+      if(openBtn) openBtn.addEventListener('click', open);
+      if(close1) close1.addEventListener('click', close);
+      if(close2) close2.addEventListener('click', close);
+      if(modal) modal.addEventListener('click', function(e){
+        if(e.target === modal) close();
+      });
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape') close();
+      });
+    });
+  })();
+
+
+
+// === HyperCore UI hotfix hooks ===
+function hcSetModalOpen(isOpen){
+  document.body.classList.toggle('hc-modal-open', !!isOpen);
+}
+function hcScrollToOutput(){
+  const out = document.getElementById('output');
+  if(!out) return;
+  setTimeout(()=>{ out.scrollIntoView({behavior:'smooth', block:'start'}); }, 50);
+}
+</script>
+
+
+  <!-- Post settings modal -->
+  <div class="hc-modal-backdrop" id="postSettingsModal" aria-hidden="true">
+    <div class="hc-modal" role="dialog" aria-modal="true" aria-labelledby="postSettingsTitle">
+      <div class="hc-modal-head">
+        <div class="hc-modal-title" id="postSettingsTitle">投稿設定</div>
+        <button class="hc-icon-btn" type="button" id="closePostSettingsBtn" aria-label="close">×</button>
+      </div>
+      <div class="hc-modal-body" id="postSettingsBody"></div>
+      <div class="hc-modal-foot">
+        <button class="secondary" type="button" id="closePostSettingsBtn2">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Floating Settings (Accounts Drawer) -->
+  
+
+  <div id="drawerOverlay" aria-hidden="true"></div>
+  <aside id="accountsDrawer" class="drawer" aria-hidden="true">
+  <div id="drawerOverlay" class="drawerOverlay" tabindex="-1"></div>
+  <div class="drawerPanel" role="dialog" aria-modal="true" aria-label="設定 / アカウント">
+    <div class="drawerHeader">
+      <div class="drawerTitle">設定 / アカウント</div>
+      <button class="drawerClose" id="drawerCloseBtn" type="button" aria-label="閉じる">×</button>
+    </div>
+
+    <div class="drawerBody" id="drawerBody">
+      <div class="drawerTabs" role="tablist" aria-label="設定タブ">
+        <button class="drawerTab active" type="button" role="tab" aria-selected="true" data-tab="acc">Xアカウント</button>
+        <button class="drawerTab" type="button" role="tab" aria-selected="false" data-tab="lic">ライセンス</button>
+      </div>
+
+      <section class="drawerTabPanel active" id="drawerTab_acc" role="tabpanel">        <div class="card">
+          <h2 style="margin:0 0 8px; font-size:16px;">Xアカウント</h2>
+          <div class="muted">※入力内容はこの端末のブラウザ保存領域に保存されます（端末共有/紛失には注意）。</div>
+
+          <details class="hc-acc" open>
+            <summary>
+              <span>アカウント登録</span>
+              <span class="hc-acc-chevron"></span>
+            </summary>
+
+            <div class="acct-grid" style="margin-top:12px;">
+              <div>
+                <label>ラベル（例：捨て垢A）</label>
+                <input id="accLabel" placeholder="任意" />
+
+                <label>X ID（@は任意）</label>
+                <input id="accXId" placeholder="example_id" />
+
+                <label>X パスワード</label>
+                <input id="accXPw" type="text" placeholder="password" />
+
+                <label>メールアドレス</label>
+                <input id="accMail" placeholder="example@mail.com" />
+
+                <label>メール パスワード</label>
+                <input id="accMailPw" type="text" placeholder="mail password" />
+
+                
+        <label>登録番号</label>
+        <input id="accRegNumber" type="text" placeholder="reg_number">
+        <label>認証</label>
+        <input id="accAuth" type="text" placeholder="auth">
+        <label>2FAリンク</label>
+        <input id="acc2FALink" type="text" placeholder="2FA_link">
+        <label>バックアップコード</label>
+        <input id="accBackupCode" type="text" placeholder="backupcode">
+<label>メールパス（任意）</label>
+                <input id="accMailPath" placeholder="例: https://mail.example.com/ など" />
+
+                <label>メモ（任意）</label>
+                <input id="accNote" placeholder="任意" />
+
+                <div class="btns" style="margin-top:10px;">
+                  <button class="primary" id="accSaveBtn" type="button">保存</button>
+                  <button class="secondary" id="accClearBtn" type="button">クリア</button>
+                </div>
+                <div class="muted" id="accEditHint" style="margin-top:8px; display:none;">編集モード：保存で上書きされます</div>
+              </div>
+
+              <div>
+                <div class="muted" style="margin-bottom:8px;">スプレッドシート（CSV/TSV/XLSX）一括取り込み</div>
+                <div class="btns" style="flex-wrap:wrap; gap:10px;">
+                  <button class="secondary" id="accImportBtn" type="button">ファイル選択</button>
+                  <input id="accImportFile" type="file" accept=".csv,.tsv,.xlsx" style="display:none;" />
+                  <button class="secondary" id="accExportBtn" type="button">エクスポート</button>
+                  <button class="danger" id="accDeleteAllBtn" type="button">全削除</button>
+                </div>
+                <div class="muted" style="margin-top:10px; font-size:12px;">
+                  取り込み列例：label, x_id, x_pass, mail, mail_pass（NODATAは未入力扱い）
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="hc-acc" open style="margin-top:12px;">
+            <summary>
+              <span>アカウント一覧</span>
+              <span class="hc-acc-chevron"></span>
+            </summary>
+
+            <div id="accList" class="acc-list" style="margin-top:12px;"></div>
+            <div class="muted" id="accCount" style="margin-top:8px;"></div>
+          </details>
+        </div>
+
+        <!-- Account detail bottom sheet -->
+        <div id="accDetailOverlay" class="hc-sheet-overlay" aria-hidden="true">
+          <div id="accDetailSheet" class="hc-sheet" role="dialog" aria-modal="true" aria-label="アカウント詳細">
+            <div class="hc-sheet-head">
+              <div id="accDetailTitle" class="hc-sheet-title">アカウント</div>
+              <button id="accDetailClose" class="iconBtn" type="button" aria-label="閉じる">×</button>
+            </div>
+            <div class="hc-sheet-body" id="accDetailBody"></div>
+            <div class="hc-sheet-actions">
+              <button id="accUseBtn" class="primary" type="button">このアカウントを使用</button>
+              <button id="accEditBtn" class="secondary" type="button">編集</button>
+              <button id="accDeleteBtn" class="danger" type="button">削除</button>
+            </div>
+          </div>
+        </div>
+</section>
+
+      <section class="drawerTabPanel" id="drawerTab_lic" role="tabpanel">
+        <div class="panelCard">
+          <div class="panelTitle">ライセンス情報</div>
+          <div class="panelDesc">状態・期限の確認、再認証は「情報」からいつでもできます。</div>
+          <div class="panelActions">
+            <button type="button" class="btn primary" id="openInfoFromDrawer">情報を開く</button>
+            <button type="button" class="btn" id="reauthFromDrawer">ライセンス再認証</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</aside>
+
+
+<script>
+// === Accounts Drawer Wiring + Selected Account ===
+(function(){
+  const SEL_LS = "x_accounts_selected_v1";
+
+  function getSelectedId(){ try{ return localStorage.getItem(SEL_LS)||""; }catch(e){ return ""; } }
+  function setSelectedId(id){ try{ localStorage.setItem(SEL_LS, id||""); }catch(e){} }
+
+  function loadAccountsSafe(){
+    try{
+      const raw = localStorage.getItem("x_accounts_plain_v1");
+      if(!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    }catch(e){ return []; }
+  }
+
+  function updateCurrentAccountUI(){
+    const el = document.getElementById("currentAccText");
+    if(!el) return;
+    const id = getSelectedId();
+    const arr = loadAccountsSafe();
+    const a = arr.find(x=>x.id===id);
+    if(a){
+      const xid = (a.xid||"").trim();
+      el.textContent = (a.label ? a.label + " / " : "") + (xid ? ("@" + xid.replace(/^@/,"")) : "IDなし");
+    } else {
+      el.textContent = "未選択";
+    }
+  }
+
+  // Move accounts card from pageAccounts into drawer
+  function mountAccountsIntoDrawer(){
+    const drawerBody = document.getElementById("drawerContent");
+    const pageAccounts = document.getElementById("pageAccounts");
+    if(!drawerBody || !pageAccounts) return;
+    // move once
+    if(pageAccounts.dataset.mounted === "1") return;
+    pageAccounts.dataset.mounted = "1";
+    // show inside drawer
+    pageAccounts.style.display = "block";
+    pageAccounts.style.maxHeight = "none";
+    pageAccounts.style.overflow = "visible";
+    pageAccounts.classList.add("in-drawer");
+    drawerBody.innerHTML = "";
+    drawerBody.appendChild(pageAccounts);
+    // hide original tab button if exists (accounts tab may remain elsewhere)
+    try{
+      const tab = document.getElementById("tabAccounts");
+      if(tab) tab.style.display = "none";
+    }catch(e){}
+  }
+
+  function openDrawer(){
+    document.getElementById("accountsDrawer")?.classList.add("show");
+    document.getElementById("drawerOverlay")?.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+  function closeDrawer(){
+    document.getElementById("accountsDrawer")?.classList.remove("show");
+    document.getElementById("drawerOverlay")?.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
+  // keep drawer content interactive on iOS: prevent overlay from stealing taps
+  const gear = document.getElementById("topGearBtn");
+  gear?.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); openDrawer(); });
+  gear?.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); openDrawer(); }, {passive:false});
+
+  document.getElementById("drawerClose")?.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); closeDrawer(); });
+  document.getElementById("drawerOverlay")?.addEventListener("click", (e)=>{ closeDrawer(); });
+
+  // mount + refresh when ready
+  const boot = ()=>{
+    mountAccountsIntoDrawer();
+    try{ if(typeof window.updateCurrentAccountUI==="function") window.updateCurrentAccountUI(); }catch(e){}
+    try{ if(typeof window.renderAccounts==="function") window.renderAccounts(); }catch(e){}
+  };
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+</script>
+
+
+<script>
+/* === v19: make top gear always work === */
+(function(){
+  function openDrawer(){
+    const drawer = document.getElementById("accountsDrawer");
+    const overlay = document.getElementById("drawerOverlay");
+    drawer?.classList.add("show");
+    drawer?.classList.add("open");
+    overlay?.classList.add("show");
+    // prevent background scroll on mobile
+    document.body.style.overflow = "hidden";
+
+    // Ensure accounts UI is mounted + visible
+    try { mountAccountsIntoDrawer(); } catch(e) {}
+    try {
+      const pageAccounts = document.getElementById("pageAccounts");
+      if(pageAccounts){ pageAccounts.style.display = "block"; }
+    } catch(e){}
+}
+  function closeDrawer(){
+    const drawer = document.getElementById("accountsDrawer");
+    const overlay = document.getElementById("drawerOverlay");
+    drawer?.classList.remove("show");
+    drawer?.classList.remove("open");
+    overlay?.classList.remove("show");
+    document.body.style.overflow = "";
+}
+  const gear = document.getElementById("topGearBtn");
+  if(gear){
+    gear.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); openDrawer(); }, {passive:false});
+    // touch fallback
+    gear.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); openDrawer(); }, {passive:false});
+  }
+  const overlay = document.getElementById("drawerOverlay");
+  overlay?.addEventListener("click", ()=>closeDrawer());
+  document.getElementById("drawerClose")?.addEventListener("click", ()=>closeDrawer());
+
+  // escape to close (desktop)
+  document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") closeDrawer(); });
+})();
+</script>
+
+
+<script>
+(() => {
+  // Drawer tabs
+  const tabButtons = Array.from(document.querySelectorAll("#accountsDrawer .drawerTab"));
+  const panels = {
+    acc: document.getElementById("drawerTab_acc"),
+    lic: document.getElementById("drawerTab_lic"),
+  };
+  function setTab(name){
+    tabButtons.forEach(b=>{
+      const on = b.dataset.tab === name;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    Object.entries(panels).forEach(([k,el])=>{ if(el) el.classList.toggle("active", k===name); });
+  }
+  tabButtons.forEach(b=>b.addEventListener("click", ()=>setTab(b.dataset.tab)));
+
+  // Drawer -> Info modal bridge
+  const btnInfo = document.getElementById("openInfoFromDrawer");
+  if (btnInfo) btnInfo.addEventListener("click", () => {
+    try {
+      // close drawer then open info modal
+      if (typeof closeDrawer === "function") closeDrawer();
+      const infoBtn = document.getElementById("infoBtn");
+      if (infoBtn) infoBtn.click();
+      else if (typeof openInfoModal === "function") openInfoModal();
+    } catch(e){}
+  });
+
+  const btnReauth = document.getElementById("reauthFromDrawer");
+  if (btnReauth) btnReauth.addEventListener("click", async () => {
+    try {
+      if (typeof closeDrawer === "function") closeDrawer();
+      const reauthBtn = document.getElementById("btnReauth") || document.getElementById("reauthBtn");
+      if (reauthBtn) reauthBtn.click();
+      else if (typeof hcReauth === "function") hcReauth();
+    } catch(e){}
+  });
+})();
+</script>
+
+
+  <div class="card" style="margin-top:12px;">
+    <div style="font-weight:900; letter-spacing:.06em; margin-bottom:10px;">法務・ポリシー</div>
+    <div class="btns" style="flex-wrap:wrap; gap:10px;">
+      <a class="primary" href="./tokutei.html" target="_blank" rel="noopener">特商法</a>
+      <a class="secondary" href="./terms.html" target="_blank" rel="noopener">利用規約</a>
+      <a class="secondary" href="./privacy.html" target="_blank" rel="noopener">プライバシー</a>
+    </div>
+    <div class="muted" style="margin-top:8px; font-size:12px;">※別タブで開きます</div>
+  </div>
+
+
+<script>
+/* --- Hotfix: ensure account detail sheet is attached to <body> so it always shows correctly (iOS + drawer) --- */
+(function(){
+  try{
+    const ov = document.getElementById('accDetailOverlay');
+    if(ov && ov.parentElement !== document.body){
+      document.body.appendChild(ov);
+    }
+  }catch(e){}
+})();
+</script>
+
+
+<script>
+(function(){
+  const LS = {
+    posts:'hc_threads_posts_v1',
+    rules:'hc_threads_rules_v1',
+    leads:'hc_threads_leads_v1',
+    dm:'hc_threads_dm_v1',
+    settings:'hc_threads_settings_v1'
+  };
+  const read=(k,d)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } };
+  const write=(k,v)=>localStorage.setItem(k, JSON.stringify(v));
+  const uid=()=> 'th_' + Math.random().toString(16).slice(2) + Date.now().toString(16);
+  const esc=(s)=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+
+  function setThreadsTab(name){
+    document.querySelectorAll('#threadsTabs [data-threadstab]').forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.threadstab===name);
+    });
+    document.querySelectorAll('.threads-tabpanel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('threadsTab_'+name)?.classList.add('active');
+  }
+
+  function renderPosts(){
+    const list = read(LS.posts, []);
+    const el = document.getElementById('threadsPostsList');
+    if(!el) return;
+    if(!list.length){ el.innerHTML = '<div class="muted">保存された投稿設定はありません。</div>'; return; }
+    el.innerHTML = list.map(x=>`
+      <div class="item">
+        <div><b>${esc(x.title || '無題')}</b></div>
+        <div class="threads-mini">${esc(x.target || '')}</div>
+        <pre>${esc(x.note || '')}</pre>
+      </div>`).join('');
+  }
+
+  function renderRules(){
+    const list = read(LS.rules, []);
+    const el = document.getElementById('threadsRulesList');
+    if(!el) return;
+    if(!list.length){ el.innerHTML = '<div class="muted">保存されたルールはありません。</div>'; return; }
+    el.innerHTML = list.map(x=>`
+      <div class="item">
+        <div><b>${esc(x.name || '無名ルール')}</b> <span class="threads-mini">(${esc(x.action || '')})</span></div>
+        <div class="threads-mini">${esc((x.keywords||[]).join(', '))}</div>
+        <pre>${esc(x.reply || '')}</pre>
+      </div>`).join('');
+  }
+
+  function renderLeads(){
+    const list = read(LS.leads, []);
+    const el = document.getElementById('threadsLeadsList');
+    if(!el) return;
+    if(!list.length){ el.innerHTML = '<div class="muted">保存されたリードはありません。</div>'; return; }
+    el.innerHTML = list.map(x=>`
+      <div class="item">
+        <div><b>${esc(x.user || '')}</b> <span class="threads-mini">${esc(x.status || '')}</span></div>
+        <pre>${esc(x.comment || '')}</pre>
+      </div>`).join('');
+  }
+
+  function renderDm(){
+    const dm = read(LS.dm, null);
+    const el = document.getElementById('threadsDmPreview');
+    if(!el) return;
+    if(!dm){ el.textContent = '保存するとここにテンプレが表示されます。'; return; }
+    el.textContent = `モード: ${dm.mode}\n送信先: ${dm.target}\n\n${dm.template || ''}`;
+  }
+
+  function renderSummary(){
+    const posts = read(LS.posts, []);
+    const rules = read(LS.rules, []);
+    const leads = read(LS.leads, []);
+    const settings = read(LS.settings, {});
+    const el = document.getElementById('threadsSummary');
+    if(!el) return;
+    el.innerHTML = `
+      投稿設定: <b>${posts.length}</b>件<br>
+      条件返信ルール: <b>${rules.length}</b>件<br>
+      リード: <b>${leads.length}</b>件<br>
+      クールダウン: <b>${esc(settings.cooldown || 60)}</b>分<br>
+      深夜停止: <b>${esc(settings.nightStop || 'on')}</b>
+    `;
+  }
+
+  function bind(){
+    document.querySelectorAll('#threadsTabs [data-threadstab]').forEach(btn=>{
+      btn.addEventListener('click', ()=>setThreadsTab(btn.dataset.threadstab));
+    });
+
+    document.getElementById('threadsSavePostBtn')?.addEventListener('click', ()=>{
+      const arr = read(LS.posts, []);
+      arr.unshift({
+        id:uid(),
+        target:document.getElementById('threadsPostTarget')?.value?.trim() || '',
+        title:document.getElementById('threadsPostTitle')?.value?.trim() || '',
+        note:document.getElementById('threadsPostNote')?.value?.trim() || '',
+        createdAt:new Date().toISOString()
+      });
+      write(LS.posts, arr);
+      renderPosts(); renderSummary();
+    });
+
+    document.getElementById('threadsSaveRuleBtn')?.addEventListener('click', ()=>{
+      const arr = read(LS.rules, []);
+      arr.unshift({
+        id:uid(),
+        name:document.getElementById('threadsRuleName')?.value?.trim() || '',
+        keywords:(document.getElementById('threadsRuleKeywords')?.value || '').split(',').map(s=>s.trim()).filter(Boolean),
+        reply:document.getElementById('threadsRuleReply')?.value?.trim() || '',
+        action:document.getElementById('threadsRuleAction')?.value || 'reply_only',
+        createdAt:new Date().toISOString()
+      });
+      write(LS.rules, arr);
+      renderRules(); renderSummary();
+    });
+
+    document.getElementById('threadsSaveLeadBtn')?.addEventListener('click', ()=>{
+      const arr = read(LS.leads, []);
+      arr.unshift({
+        id:uid(),
+        user:document.getElementById('threadsLeadUser')?.value?.trim() || '',
+        comment:document.getElementById('threadsLeadComment')?.value?.trim() || '',
+        status:document.getElementById('threadsLeadStatus')?.value || '新規',
+        createdAt:new Date().toISOString()
+      });
+      write(LS.leads, arr);
+      renderLeads(); renderSummary();
+    });
+
+    document.getElementById('threadsSaveDmBtn')?.addEventListener('click', ()=>{
+      write(LS.dm, {
+        mode:document.getElementById('threadsDmMode')?.value || 'off',
+        target:document.getElementById('threadsDmTarget')?.value || 'instagram',
+        template:document.getElementById('threadsDmTemplate')?.value?.trim() || ''
+      });
+      renderDm();
+    });
+
+    document.getElementById('threadsSaveSettingsBtn')?.addEventListener('click', ()=>{
+      write(LS.settings, {
+        cooldown:document.getElementById('threadsCooldown')?.value || '60',
+        nightStop:document.getElementById('threadsNightStop')?.value || 'on',
+        logLimit:document.getElementById('threadsLogLimit')?.value || '100'
+      });
+      renderSummary();
+    });
+
+    document.getElementById('threadsSeedDemoBtn')?.addEventListener('click', ()=>{
+      write(LS.posts, [{id:uid(), target:'https://threads.net/t/demo', title:'詳細誘導投稿', note:'詳細・料金・欲しい に反応', createdAt:new Date().toISOString()}]);
+      write(LS.rules, [{id:uid(), name:'詳細返信', keywords:['詳細','料金','欲しい'], reply:'ありがとうございます。詳細はDMまたは案内リンクから確認できます。', action:'full', createdAt:new Date().toISOString()}]);
+      write(LS.leads, [{id:uid(), user:'@demo_user', comment:'詳細ほしいです', status:'DM候補作成済み', createdAt:new Date().toISOString()}]);
+      write(LS.dm, {mode:'candidate_only', target:'instagram', template:'ありがとうございます。詳細案内はこちらです。必要ならそのまま返信ください。'});
+      write(LS.settings, {cooldown:'60', nightStop:'on', logLimit:'100'});
+      renderPosts(); renderRules(); renderLeads(); renderDm(); renderSummary();
+    });
+
+    document.getElementById('threadsClearAllBtn')?.addEventListener('click', ()=>{
+      if(!confirm('Threadsデータを全削除しますか？')) return;
+      Object.values(LS).forEach(k=>localStorage.removeItem(k));
+      renderPosts(); renderRules(); renderLeads(); renderDm(); renderSummary();
+    });
+
+    const dm = read(LS.dm, null);
+    if(dm){
+      const a=document.getElementById('threadsDmMode'); if(a) a.value=dm.mode || 'off';
+      const b=document.getElementById('threadsDmTarget'); if(b) b.value=dm.target || 'instagram';
+      const c=document.getElementById('threadsDmTemplate'); if(c) c.value=dm.template || '';
+    }
+    const st = read(LS.settings, null);
+    if(st){
+      const a=document.getElementById('threadsCooldown'); if(a) a.value=st.cooldown || '60';
+      const b=document.getElementById('threadsNightStop'); if(b) b.value=st.nightStop || 'on';
+      const c=document.getElementById('threadsLogLimit'); if(c) c.value=st.logLimit || '100';
+    }
+
+    renderPosts(); renderRules(); renderLeads(); renderDm(); renderSummary();
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
+
+
+<script>
+(() => {
+  const LS = {
+    posts: 'threads_posts_v1',
+    rules: 'threads_rules_v1',
+    leads: 'threads_leads_v1',
+    dm: 'threads_dm_v1',
+    settings: 'threads_settings_v1',
+    logs: 'threads_logs_v1',
+    run: 'threads_last_run_v1'
+  };
+  const read = (key, fallback) => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e){ return fallback; } };
+  const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : ('t_' + Math.random().toString(16).slice(2) + Date.now()));
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const nowIso = () => new Date().toISOString();
+  const jpTime = (iso) => { try { return new Date(iso).toLocaleString('ja-JP'); } catch(e){ return iso || ''; } };
+
+  function toast(msg){
+    let t = document.getElementById('threadsToast');
+    if(!t){
+      t = document.createElement('div');
+      t.id = 'threadsToast';
+      t.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(12,14,20,.92);color:#fff;font-weight:900;font-size:13px;z-index:30000;opacity:0;transition:opacity .15s ease;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._tm);
+    t._tm = setTimeout(()=>t.style.opacity='0', 1400);
+  }
+
+  async function copyText(text){
+    const s = String(text || '');
+    try{
+      await navigator.clipboard.writeText(s);
+      return true;
+    }catch(e){
+      try{
+        const ta = document.createElement('textarea');
+        ta.value = s;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        return true;
+      }catch(err){ return false; }
+    }
+  }
+
+  function addLog(type, message, meta = {}){
+    const settings = read(LS.settings, {});
+    const limit = Number(settings.logLimit || 100);
+    const logs = read(LS.logs, []);
+    logs.unshift({ id: uid(), type, message, meta, createdAt: nowIso() });
+    write(LS.logs, logs.slice(0, Math.max(10, limit)));
+    renderLogs();
+    renderDashboard();
+  }
+
+  function buildDmCandidate(user, comment){
+    const dm = read(LS.dm, { template:'ありがとうございます。詳細案内はこちらです。必要ならそのまま返信ください。' });
+    const tpl = dm.template || 'ありがとうございます。詳細案内はこちらです。必要ならそのまま返信ください。';
+    return tpl.replace(/\{\{\s*username\s*\}\}/g, user || '').replace(/\{\{\s*comment\s*\}\}/g, comment || '');
+  }
+
+  function matchRule(comment){
+    const rules = read(LS.rules, []);
+    const lower = String(comment || '').toLowerCase();
+    return rules.find(rule => (rule.keywords || []).some(k => lower.includes(String(k).toLowerCase())));
+  }
+
+  function renderLogs(){
+    const logs = read(LS.logs, []);
+    const html = logs.slice(0, 8).map(x => `
+      <div class="threads-log-item">
+        <div class="threads-log-time">${esc(jpTime(x.createdAt))}</div>
+        <div><span class="threads-badge">${esc(x.type)}</span></div>
+        <div style="margin-top:8px;">${esc(x.message)}</div>
+      </div>`).join('') || '<div class="muted">まだログはありません。</div>';
+    const a = document.getElementById('threadsActivitySummary');
+    const b = document.getElementById('dashboardActivityLog');
+    if(a) a.innerHTML = html;
+    if(b) b.innerHTML = html;
+  }
+
+  function renderDashboard(){
+    const posts = read(LS.posts, []);
+    const rules = read(LS.rules, []);
+    const leads = read(LS.leads, []);
+    const logs = read(LS.logs, []);
+    const dm = read(LS.dm, { mode:'off' });
+
+    const summary = document.getElementById('dashboardThreadsSummary');
+    if(summary){
+      const latest = logs[0];
+      summary.innerHTML = `
+        保存投稿 <b>${posts.length}</b>件 / ルール <b>${rules.length}</b>件 / リード <b>${leads.length}</b>件<br>
+        DMモード <b>${esc(dm.mode || 'off')}</b>${latest ? `<br>最新ログ: <b>${esc(latest.message)}</b>` : ''}
+      `;
+    }
+
+    const stats = document.getElementById('dashboardThreadsStats');
+    if(stats){
+      const newCount = leads.filter(x => x.status === '新規').length;
+      const dmCount = leads.filter(x => x.dmCandidate).length;
+      const doneCount = leads.filter(x => x.status === '完了').length;
+      stats.innerHTML = `
+        <div class="threads-stat"><div class="threads-mini">新規リード</div><div class="n">${newCount}</div></div>
+        <div class="threads-stat"><div class="threads-mini">DM候補あり</div><div class="n">${dmCount}</div></div>
+        <div class="threads-stat"><div class="threads-mini">完了</div><div class="n">${doneCount}</div></div>
+        <div class="threads-stat"><div class="threads-mini">ログ件数</div><div class="n">${logs.length}</div></div>
+      `;
+    }
+  }
+
+  function saveLeadRecord(payload){
+    const arr = read(LS.leads, []);
+    arr.unshift({ id: uid(), createdAt: nowIso(), ...payload });
+    write(LS.leads, arr);
+  }
+
+  function rerenderLeadListIfPossible(){
+    const filter = document.getElementById('threadsLeadFilter')?.value || 'all';
+    const list = read(LS.leads, []);
+    const el = document.getElementById('threadsLeadsList');
+    if(!el) return;
+    const filtered = filter === 'all' ? list : list.filter(x => x.status === filter);
+    el.innerHTML = filtered.length ? filtered.map(x=>`
+      <div class="item">
+        <div><b>${esc(x.user || '')}</b> <span class="threads-mini">${esc(x.status || '')}</span></div>
+        <div class="threads-mini">${esc(jpTime(x.createdAt))}</div>
+        <pre>${esc(x.comment || '')}</pre>
+        ${x.dmCandidate ? `<div class="threads-mini">DM候補</div><pre>${esc(x.dmCandidate)}</pre>` : ''}
+        <div class="threads-actions">
+          <button type="button" class="secondary" data-tx-action="mark-progress" data-id="${esc(x.id)}">対応中へ</button>
+          <button type="button" class="secondary" data-tx-action="mark-done" data-id="${esc(x.id)}">完了へ</button>
+          <button type="button" class="secondary" data-tx-action="copy-dm" data-id="${esc(x.id)}">DM候補コピー</button>
+          <button type="button" class="secondary danger" data-tx-action="delete-lead" data-id="${esc(x.id)}">削除</button>
+        </div>
+      </div>`).join('') : '<div class="muted">保存されたリードはありません。</div>';
+  }
+
+  function rerenderSummaryIfPossible(){
+    const posts = read(LS.posts, []);
+    const rules = read(LS.rules, []);
+    const leads = read(LS.leads, []);
+    const settings = read(LS.settings, {});
+    const logs = read(LS.logs, []);
+    const dm = read(LS.dm, { mode:'off', target:'instagram' });
+    const el = document.getElementById('threadsSummary');
+    if(!el) return;
+    const newCount = leads.filter(x => x.status === '新規').length;
+    const doneCount = leads.filter(x => x.status === '完了').length;
+    el.innerHTML = `
+      投稿設定: <b>${posts.length}</b>件<br>
+      条件返信ルール: <b>${rules.length}</b>件<br>
+      リード: <b>${leads.length}</b>件（新規 <b>${newCount}</b> / 完了 <b>${doneCount}</b>）<br>
+      DMモード: <b>${esc(dm.mode || 'off')}</b> / 送信先: <b>${esc(dm.target || 'instagram')}</b><br>
+      クールダウン: <b>${esc(settings.cooldown || 60)}</b>分<br>
+      深夜停止: <b>${esc(settings.nightStop || 'on')}</b><br>
+      ログ件数: <b>${logs.length}</b>件
+    `;
+  }
+
+  function runSimulation(mode = 'full'){
+    const user = document.getElementById('threadsSimUser')?.value?.trim() || '@demo_user';
+    const comment = document.getElementById('threadsSimComment')?.value?.trim() || '';
+    const post = document.getElementById('threadsSimPost')?.value?.trim() || '';
+    const resultEl = document.getElementById('threadsSimulationResult');
+    const previewEl = document.getElementById('threadsAutomationPreview');
+
+    if(!comment){
+      if(resultEl) resultEl.textContent = 'コメント本文を入れてください。';
+      return;
+    }
+
+    const rule = matchRule(comment);
+    const dmCandidate = buildDmCandidate(user, comment);
+    let preview = `ユーザー: ${user}\n投稿: ${post || '-'}\nコメント: ${comment}\n`;
+    let status = '新規';
+
+    if(rule){
+      preview += `\n一致ルール: ${rule.name || '無名ルール'}\n公開返信:\n${rule.reply || ''}\n`;
+      if(rule.action === 'reply_and_dm_candidate' || rule.action === 'full' || mode === 'dm_only'){
+        preview += `\nDM候補:\n${dmCandidate}\n`;
+        status = 'DM候補作成済み';
+      }
+      if(mode !== 'dm_only'){
+        saveLeadRecord({
+          user, comment, status, post,
+          matchedRule: rule.name || '',
+          publicReply: rule.reply || '',
+          dmCandidate: (rule.action === 'reply_and_dm_candidate' || rule.action === 'full') ? dmCandidate : ''
+        });
+      }
+      addLog('Threads', `コメント自動処理: ${user} / ${rule.name || '無名ルール'} に一致`, { user, comment, rule: rule.name || '' });
+      if(resultEl) resultEl.textContent = `一致しました: ${rule.name || '無名ルール'}`;
+    } else {
+      preview += `\n一致ルールなし\nDM候補:\n${dmCandidate}\n`;
+      if(mode === 'dm_only'){
+        addLog('Threads', `DM候補のみ作成: ${user}`, { user, comment });
+        if(resultEl) resultEl.textContent = 'ルール未一致。DM候補だけ作成しました。';
+      } else {
+        saveLeadRecord({ user, comment, status:'新規', post, matchedRule:'', publicReply:'', dmCandidate:'' });
+        addLog('Threads', `コメント保存のみ: ${user}`, { user, comment });
+        if(resultEl) resultEl.textContent = '一致ルールがないため、リード保存のみ行いました。';
+      }
+    }
+
+    write(LS.run, { user, comment, post, preview, dmCandidate, createdAt: nowIso(), matchedRule: rule ? (rule.name || '') : '' });
+    if(previewEl) previewEl.textContent = preview;
+    rerenderLeadListIfPossible();
+    rerenderSummaryIfPossible();
+    renderLogs();
+    renderDashboard();
+  }
+
+  function bind(){
+    document.getElementById('threadsLeadFilter')?.addEventListener('change', rerenderLeadListIfPossible);
+    document.getElementById('threadsRunSimulationBtn')?.addEventListener('click', ()=>runSimulation('full'));
+    document.getElementById('threadsGenerateDmOnlyBtn')?.addEventListener('click', ()=>runSimulation('dm_only'));
+
+    document.getElementById('threadsCopyAutomationReplyBtn')?.addEventListener('click', async ()=>{
+      const last = read(LS.run, null);
+      const ok = await copyText(last?.preview || '');
+      toast(ok ? '実行結果をコピーしました' : 'コピー失敗');
+    });
+    document.getElementById('threadsCopyAutomationDmBtn')?.addEventListener('click', async ()=>{
+      const last = read(LS.run, null);
+      if(!last?.dmCandidate){ toast('DM候補がありません'); return; }
+      const ok = await copyText(last.dmCandidate);
+      toast(ok ? 'DM候補をコピーしました' : 'コピー失敗');
+    });
+
+    document.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('[data-tx-action]');
+      if(!btn) return;
+      const id = btn.dataset.id;
+      const action = btn.dataset.txAction;
+      const leads = read(LS.leads, []);
+      const item = leads.find(x => x.id === id);
+
+      if(action === 'copy-dm'){
+        if(!item?.dmCandidate){ toast('DM候補がありません'); return; }
+        const ok = await copyText(item.dmCandidate);
+        toast(ok ? 'DM候補をコピーしました' : 'コピー失敗');
+        return;
+      }
+
+      if(action === 'delete-lead'){
+        if(!confirm('このリードを削除しますか？')) return;
+        write(LS.leads, leads.filter(x => x.id !== id));
+        addLog('Threads', 'リードを削除しました');
+      }
+
+      if(action === 'mark-progress' || action === 'mark-done'){
+        const next = action === 'mark-progress' ? '対応中' : '完了';
+        write(LS.leads, leads.map(x => x.id === id ? { ...x, status: next } : x));
+        addLog('Threads', `リード状態を ${next} に変更しました`);
+      }
+
+      rerenderLeadListIfPossible();
+      rerenderSummaryIfPossible();
+      renderDashboard();
+    });
+
+    rerenderLeadListIfPossible();
+    rerenderSummaryIfPossible();
+    renderLogs();
+    renderDashboard();
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
+
+
+<script>
+(() => {
+  const LS = {
+    monitors: 'threads_monitors_v1',
+    exportlog: 'threads_exportlog_v1',
+    xposts: 'x_autopost_jobs_v1',
+    version: 'hc_version_meta_v1'
+  };
+
+  const read = (key, fallback) => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e){ return fallback; } };
+  const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : ('id_' + Math.random().toString(16).slice(2) + Date.now()));
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const jp = (iso) => { try { return new Date(iso).toLocaleString('ja-JP'); } catch(e){ return iso || ''; } };
+
+  function toast(msg){
+    let t = document.getElementById('featurePackToast');
+    if(!t){
+      t = document.createElement('div');
+      t.id = 'featurePackToast';
+      t.style.cssText = 'position:fixed;left:50%;bottom:94px;transform:translateX(-50%);padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(12,14,20,.92);color:#fff;font-weight:900;font-size:13px;z-index:30003;opacity:0;transition:opacity .15s ease;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._tm);
+    t._tm = setTimeout(()=>t.style.opacity='0', 1400);
+  }
+
+  function appendThreadsLog(message){
+    try{
+      const logs = read('threads_logs_v1', []);
+      logs.unshift({ id: uid(), type:'Feature', message, createdAt:new Date().toISOString() });
+      write('threads_logs_v1', logs.slice(0, 120));
+      window.dispatchEvent(new CustomEvent('threads-log-updated'));
+    }catch(e){}
+  }
+
+  function renderMonitorList(){
+    const items = read(LS.monitors, []);
+    const el = document.getElementById('threadsMonitorList');
+    if(!el) return;
+    if(!items.length){
+      el.innerHTML = '<div class="muted">監視設定はまだありません。</div>';
+      return;
+    }
+    el.innerHTML = items.map(item => `
+      <div class="monitor-item">
+        <div><b>${esc(item.name || '無題')}</b></div>
+        <div class="threads-mini">${esc(item.url || '')}</div>
+        <div class="threads-mini">頻度: ${esc(item.interval || '')}分 / モード: ${esc(item.mode || '')}</div>
+        <div class="threads-actions">
+          <button type="button" class="secondary" data-monitor-action="run" data-id="${esc(item.id)}">今すぐ実行</button>
+          <button type="button" class="secondary danger" data-monitor-action="delete" data-id="${esc(item.id)}">削除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderExportLog(){
+    const items = read(LS.exportlog, []);
+    const el = document.getElementById('threadsExportLog');
+    if(!el) return;
+    if(!items.length){
+      el.innerHTML = '<div class="muted">書き出し履歴はまだありません。</div>';
+      return;
+    }
+    el.innerHTML = items.slice(0, 8).map(item => `
+      <div class="export-item">
+        <div><b>${esc(item.type)}</b></div>
+        <div class="threads-mini">${esc(jp(item.createdAt))}</div>
+        <div class="threads-mini">${esc(item.summary || '')}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderXJobs(){
+    const jobs = read(LS.xposts, []);
+    const el = document.getElementById('xAutoPostList');
+    if(!el) return;
+    if(!jobs.length){
+      el.innerHTML = '<div class="muted">X自動ポスト予約はまだありません。</div>';
+      return;
+    }
+    el.innerHTML = jobs.map(job => `
+      <div class="sched-item">
+        <div><b>${esc(job.title || '無題')}</b></div>
+        <div class="threads-mini">${esc(jp(job.runAt))}</div>
+        <pre>${esc(job.text || '')}</pre>
+        <div class="threads-actions">
+          <button type="button" class="secondary" data-xjob-action="run" data-id="${esc(job.id)}">今すぐ投稿テスト</button>
+          <button type="button" class="secondary danger" data-xjob-action="delete" data-id="${esc(job.id)}">削除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function saveMonitor(){
+    const arr = read(LS.monitors, []);
+    arr.unshift({
+      id: uid(),
+      name: document.getElementById('threadsMonitorName')?.value?.trim() || '',
+      url: document.getElementById('threadsMonitorUrl')?.value?.trim() || '',
+      interval: document.getElementById('threadsMonitorInterval')?.value || '10',
+      mode: document.getElementById('threadsMonitorMode')?.value || 'reply',
+      createdAt: new Date().toISOString()
+    });
+    write(LS.monitors, arr);
+    renderMonitorList();
+    appendThreadsLog('投稿監視BOT設定を保存しました');
+    toast('監視設定を保存しました');
+  }
+
+  function exportLeads(type){
+    const leads = read('threads_leads_v1', []);
+    if(!leads.length){
+      toast('出力できるリードがありません');
+      return;
+    }
+
+    let blob, filename;
+    if(type === 'csv'){
+      const header = ['user','comment','status','post','matchedRule','publicReply','dmCandidate','createdAt'];
+      const rows = leads.map(x => header.map(k => {
+        const v = String(x[k] ?? '');
+        return '"' + v.replace(/"/g, '""') + '"';
+      }).join(','));
+      blob = new Blob([[header.join(',')].concat(rows).join('\n')], { type: 'text/csv;charset=utf-8' });
+      filename = 'threads_leads.csv';
+    } else {
+      blob = new Blob([JSON.stringify(leads, null, 2)], { type: 'application/json;charset=utf-8' });
+      filename = 'threads_leads.json';
+    }
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    const log = read(LS.exportlog, []);
+    log.unshift({ id: uid(), type: type.toUpperCase(), summary: `${leads.length}件を書き出し`, createdAt: new Date().toISOString() });
+    write(LS.exportlog, log);
+    renderExportLog();
+    appendThreadsLog(`リードを${type.toUpperCase()}で出力しました`);
+    toast(type.toUpperCase() + 'を出力しました');
+  }
+
+  function saveXJob(){
+    const arr = read(LS.xposts, []);
+    arr.unshift({
+      id: uid(),
+      title: document.getElementById('xAutoPostTitle')?.value?.trim() || '',
+      runAt: document.getElementById('xAutoPostAt')?.value || '',
+      text: document.getElementById('xAutoPostText')?.value?.trim() || '',
+      createdAt: new Date().toISOString()
+    });
+    write(LS.xposts, arr);
+    renderXJobs();
+    toast('X自動ポスト予約を保存しました');
+  }
+
+  function saveVersionMeta(){
+    const meta = {
+      version: document.getElementById('hcCurrentVersion')?.value?.trim() || 'v2.0.0',
+      note: document.getElementById('hcReleaseNote')?.value?.trim() || '',
+      updatedAt: new Date().toISOString()
+    };
+    write(LS.version, meta);
+    const el = document.getElementById('hcVersionStatus');
+    if(el) el.textContent = `保存済み: ${meta.version} / ${jp(meta.updatedAt)}`;
+    toast('更新情報を保存しました');
+  }
+
+  function checkVersionMeta(){
+    const meta = read(LS.version, null);
+    const el = document.getElementById('hcVersionStatus');
+    if(!el){
+      toast('更新情報エリアが見つかりません');
+      return;
+    }
+    if(!meta){
+      el.textContent = '保存された更新情報はありません。';
+    } else {
+      el.textContent = `現在 ${meta.version} / 最終保存 ${jp(meta.updatedAt)} / メモ: ${meta.note || 'なし'}`;
+    }
+    toast('更新情報を確認しました');
+  }
+
+  function licenseRemainDays(){
+    const exp = localStorage.getItem('license_expires_at') || localStorage.getItem('licenseExpiresAt') || localStorage.getItem('license_expires') || '';
+    if(!exp) return null;
+    const diff = new Date(exp).getTime() - Date.now();
+    if(!isFinite(diff)) return null;
+    return Math.ceil(diff / 86400000);
+  }
+
+  function mountLicenseRemainNote(){
+    const page = document.getElementById('sectionSettings');
+    if(!page || document.getElementById('hcLicenseRemainCard')) return;
+    const days = licenseRemainDays();
+    const statusText = days == null ? '未取得' : (days >= 0 ? '認証中' : '期限切れ');
+    const dayText = days == null ? '-' : String(days);
+    const firstCard = page.querySelector('.card');
+    if(!firstCard) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'card';
+    wrap.id = 'hcLicenseRemainCard';
+    wrap.style.marginTop = '12px';
+    wrap.innerHTML = `
+      <div style="font-weight:800; margin-bottom:8px;">ライセンス残日数</div>
+      <div class="kpi-row">
+        <div class="kpi-box"><div class="threads-mini">残り日数</div><div class="num">${dayText}</div></div>
+        <div class="kpi-box"><div class="threads-mini">状態</div><div class="num" style="font-size:18px;">${statusText}</div></div>
+        <div class="kpi-box"><div class="threads-mini">モード</div><div class="num" style="font-size:18px;">開発用</div></div>
+      </div>`;
+    firstCard.after(wrap);
+  }
+
+  function bind(){
+    renderMonitorList();
+    renderExportLog();
+    renderXJobs();
+
+    document.getElementById('threadsSaveMonitorBtn')?.addEventListener('click', saveMonitor);
+    document.getElementById('threadsExportCsvBtn')?.addEventListener('click', ()=>exportLeads('csv'));
+    document.getElementById('threadsExportJsonBtn')?.addEventListener('click', ()=>exportLeads('json'));
+
+    document.getElementById('xAutoPostSaveBtn')?.addEventListener('click', saveXJob);
+    document.getElementById('xAutoPostRunNowBtn')?.addEventListener('click', ()=>{
+      const txt = document.getElementById('xAutoPostText')?.value?.trim() || '';
+      if(!txt){ toast('投稿内容を入れてください'); return; }
+      const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(txt);
+      window.open(url, '_blank', 'noopener');
+      toast('X投稿画面を開きました');
+    });
+
+    document.getElementById('hcSaveVersionBtn')?.addEventListener('click', saveVersionMeta);
+    document.getElementById('hcCheckVersionBtn')?.addEventListener('click', checkVersionMeta);
+
+    document.addEventListener('click', (e) => {
+      const mbtn = e.target.closest('[data-monitor-action]');
+      if(mbtn){
+        const id = mbtn.dataset.id;
+        const action = mbtn.dataset.monitorAction;
+        const arr = read(LS.monitors, []);
+        const item = arr.find(x => x.id === id);
+        if(action === 'delete'){
+          write(LS.monitors, arr.filter(x => x.id !== id));
+          renderMonitorList();
+          appendThreadsLog('監視設定を削除しました');
+        }
+        if(action === 'run' && item){
+          const jobs = read('threads_jobs_v1', []);
+          jobs.unshift({
+            id: uid(),
+            type: 'monitor_job',
+            summary: `監視実行: ${item.name || '無題'}`,
+            payload: item,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+          });
+          write('threads_jobs_v1', jobs);
+          appendThreadsLog(`監視ジョブを追加: ${item.name || '無題'}`);
+          toast('監視ジョブを追加しました');
+        }
+      }
+
+      const xbtn = e.target.closest('[data-xjob-action]');
+      if(xbtn){
+        const id = xbtn.dataset.id;
+        const action = xbtn.dataset.xjobAction;
+        const arr = read(LS.xposts, []);
+        const item = arr.find(x => x.id === id);
+        if(action === 'delete'){
+          write(LS.xposts, arr.filter(x => x.id !== id));
+          renderXJobs();
+          toast('X予約を削除しました');
+        }
+        if(action === 'run' && item){
+          const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(item.text || '');
+          window.open(url, '_blank', 'noopener');
+          toast('X投稿画面を開きました');
+        }
+      }
+    });
+
+    mountLicenseRemainNote();
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
+
+
+<script>
+(() => {
+  const HC_API_KEY = 'threads_backend_v1';
+
+  function hcReadBackend(){
+    try{
+      return JSON.parse(localStorage.getItem(HC_API_KEY) || '{}');
+    }catch(e){ return {}; }
+  }
+
+  async function hcFetch(path, options = {}){
+    const backend = hcReadBackend();
+    if(!backend.workerUrl) throw new Error('Worker URL が未設定です');
+    const url = backend.workerUrl.replace(/\/+$/,'') + path;
+    const headers = Object.assign({'Content-Type':'application/json'}, options.headers || {});
+    if(backend.webhookSecret) headers['x-hc-secret'] = backend.webhookSecret;
+    const res = await fetch(url, Object.assign({}, options, { headers }));
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok || data.ok === false){
+      throw new Error(data.message || ('HTTP ' + res.status));
+    }
+    return data;
+  }
+
+  function hcToast(msg){
+    let t = document.getElementById('hcBridgeToast');
+    if(!t){
+      t = document.createElement('div');
+      t.id = 'hcBridgeToast';
+      t.style.cssText = 'position:fixed;left:50%;bottom:130px;transform:translateX(-50%);padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(12,14,20,.92);color:#fff;font-weight:900;font-size:13px;z-index:30004;opacity:0;transition:opacity .15s ease;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._tm);
+    t._tm = setTimeout(()=>t.style.opacity='0', 1600);
+  }
+
+  async function testBackendHealth(){
+    const statusEl = document.getElementById('threadsBackendStatus');
+    try{
+      const data = await hcFetch('/api/health', { method:'GET', headers:{} });
+      if(statusEl) statusEl.textContent = `接続OK: ${data.service || 'worker'} / ${data.time || ''}`;
+      hcToast('Worker 接続OK');
+    }catch(e){
+      if(statusEl) statusEl.textContent = '接続失敗: ' + e.message;
+      hcToast('Worker 接続失敗');
+    }
+  }
+
+  async function webhookToWorker(){
+    const area = document.getElementById('threadsWebhookPayload');
+    const result = document.getElementById('threadsWebhookResult');
+    try{
+      const payload = JSON.parse(area?.value || '{}');
+      const data = await hcFetch('/api/threads/webhook', {
+        method:'POST',
+        body: JSON.stringify(payload)
+      });
+      if(result) result.textContent = JSON.stringify(data, null, 2);
+      hcToast('Webhook を Worker へ送信しました');
+    }catch(e){
+      if(result) result.textContent = '送信失敗: ' + e.message;
+      hcToast('Webhook 送信失敗');
+    }
+  }
+
+  async function syncRulesToWorker(){
+    try{
+      const rules = JSON.parse(localStorage.getItem('threads_rules_v1') || '[]');
+      const data = await hcFetch('/api/threads/rules/bulk', {
+        method:'POST',
+        body: JSON.stringify({ rules })
+      });
+      hcToast(`ルール同期完了: ${data.count || rules.length}件`);
+    }catch(e){
+      hcToast('ルール同期失敗');
+    }
+  }
+
+  async function fetchLeadsFromWorker(){
+    try{
+      const data = await hcFetch('/api/threads/leads', { method:'GET', headers:{} });
+      if(Array.isArray(data.items)){
+        localStorage.setItem('threads_leads_v1', JSON.stringify(data.items));
+        window.dispatchEvent(new CustomEvent('threads-log-updated'));
+        hcToast(`リード取得: ${data.items.length}件`);
+      }
+    }catch(e){
+      hcToast('リード取得失敗');
+    }
+  }
+
+  async function runPendingJobsOnWorker(){
+    try{
+      const data = await hcFetch('/api/threads/jobs/run', { method:'POST', body: JSON.stringify({}) });
+      hcToast(`ジョブ実行: ${data.processed || 0}件`);
+    }catch(e){
+      hcToast('ジョブ実行失敗');
+    }
+  }
+
+  async function exportLeadsFromWorker(fmt){
+    try{
+      const data = await hcFetch('/api/threads/export?format=' + encodeURIComponent(fmt), { method:'GET', headers:{} });
+      const blob = new Blob([fmt === 'json' ? JSON.stringify(data.items || [], null, 2) : (data.csv || '')], {
+        type: fmt === 'json' ? 'application/json' : 'text/csv'
+      });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = fmt === 'json' ? 'threads_leads_worker.json' : 'threads_leads_worker.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      hcToast('Worker から出力しました');
+    }catch(e){
+      hcToast('Worker 出力失敗');
+    }
+  }
+
+  function mountBridgeButtons(){
+    const backendBox = document.getElementById('threadsBackendStatus');
+    if(backendBox && !document.getElementById('hcBackendBridgeBtns')){
+      const wrap = document.createElement('div');
+      wrap.id = 'hcBackendBridgeBtns';
+      wrap.className = 'btns';
+      wrap.style.marginTop = '10px';
+      wrap.innerHTML = `
+        <button type="button" class="secondary" id="hcBackendHealthBtn">接続確認</button>
+        <button type="button" class="secondary" id="hcSyncRulesBtn">ルール同期</button>
+        <button type="button" class="secondary" id="hcFetchLeadsBtn">リード取得</button>
+      `;
+      backendBox.insertAdjacentElement('afterend', wrap);
+      document.getElementById('hcBackendHealthBtn')?.addEventListener('click', testBackendHealth);
+      document.getElementById('hcSyncRulesBtn')?.addEventListener('click', syncRulesToWorker);
+      document.getElementById('hcFetchLeadsBtn')?.addEventListener('click', fetchLeadsFromWorker);
+    }
+
+    const queue = document.getElementById('threadsJobQueue');
+    if(queue && !document.getElementById('hcRunJobsWorkerBtn')){
+      const btnRow = document.createElement('div');
+      btnRow.className = 'btns';
+      btnRow.style.marginTop = '10px';
+      btnRow.innerHTML = `
+        <button type="button" class="secondary" id="hcRunJobsWorkerBtn">Workerでジョブ実行</button>
+      `;
+      queue.parentElement.appendChild(btnRow);
+      document.getElementById('hcRunJobsWorkerBtn')?.addEventListener('click', runPendingJobsOnWorker);
+    }
+
+    const exportLog = document.getElementById('threadsExportLog');
+    if(exportLog && !document.getElementById('hcWorkerExportBtns')){
+      const btnRow = document.createElement('div');
+      btnRow.id = 'hcWorkerExportBtns';
+      btnRow.className = 'btns';
+      btnRow.style.marginTop = '10px';
+      btnRow.innerHTML = `
+        <button type="button" class="secondary" id="hcWorkerCsvBtn">Worker CSV出力</button>
+        <button type="button" class="secondary" id="hcWorkerJsonBtn">Worker JSON出力</button>
+      `;
+      exportLog.parentElement.appendChild(btnRow);
+      document.getElementById('hcWorkerCsvBtn')?.addEventListener('click', ()=>exportLeadsFromWorker('csv'));
+      document.getElementById('hcWorkerJsonBtn')?.addEventListener('click', ()=>exportLeadsFromWorker('json'));
+    }
+
+    const webhookBtn = document.getElementById('threadsWebhookTestBtn');
+    if(webhookBtn && !webhookBtn.dataset.bridgeBound){
+      webhookBtn.dataset.bridgeBound = '1';
+      webhookBtn.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        webhookToWorker();
+      });
+      const hint = document.getElementById('threadsWebhookResult');
+      if(hint && !document.getElementById('hcWebhookHint')){
+        const p = document.createElement('div');
+        p.id = 'hcWebhookHint';
+        p.className = 'feature-note';
+        p.textContent = '※ 受信テストボタンをダブルタップすると Worker にも送信します。';
+        hint.insertAdjacentElement('beforebegin', p);
+      }
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', mountBridgeButtons);
+  } else {
+    mountBridgeButtons();
+  }
+})();
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+
+if(window.innerWidth < 1200) return;
+
+const sidebar =
+document.querySelector(".sidebar") ||
+document.querySelector(".side-menu") ||
+document.querySelector(".left-menu");
+
+const dashboard =
+document.querySelector(".dashboard") ||
+document.querySelector(".main-content") ||
+document.querySelector(".center-panel");
+
+const account =
+document.querySelector(".account-panel") ||
+document.querySelector(".settings-panel") ||
+document.querySelector(".right-panel");
+
+if(sidebar && dashboard && account){
+
+const wrapper=document.createElement("div");
+wrapper.className="pc-layout";
+
+const parent=dashboard.parentElement;
+
+parent.insertBefore(wrapper,dashboard);
+
+wrapper.appendChild(sidebar);
+wrapper.appendChild(dashboard);
+wrapper.appendChild(account);
+
+}
+
+});
+</script>
+
+
+<script id="hc-v11-force-x-tabs">
+(function(){
+  function setXTab(name){
+    var root = document.getElementById('hcXTabSystem');
+    if(!root) return;
+    if(name === 'license') name = 'account';
+    root.querySelectorAll('.hc-x-tabbtn').forEach(function(b){
+      var on = b.getAttribute('data-xtab') === name;
+      b.classList.toggle('active', on);
+    });
+    root.querySelectorAll('.hc-x-panel').forEach(function(p){
+      p.classList.toggle('active', p.id === 'hcXTab_' + name);
+    });
+  }
+  function ensureXTabs(){
+    try{
+      if(typeof buildXTabs === 'function') buildXTabs();
+      var root = document.getElementById('hcXTabSystem');
+      if(!root) return;
+      var licBtn = root.querySelector('.hc-x-tabbtn[data-xtab="license"]');
+      if(licBtn) licBtn.style.display = 'none';
+      var licPanel = document.getElementById('hcXTab_license');
+      if(licPanel) licPanel.style.display = 'none';
+      var accountPanel = document.getElementById('hcXTab_account');
+      var drawer = document.getElementById('accountsDrawer');
+      if(accountPanel && drawer && drawer.parentElement !== accountPanel){
+        accountPanel.appendChild(drawer);
+      }
+      setXTab('compose');
+      root.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
+        btn.onclick = function(){ setXTab(btn.getAttribute('data-xtab')); };
+      });
+    }catch(e){ console.error(e); }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    ensureXTabs();
+    setTimeout(ensureXTabs, 50);
+    setTimeout(ensureXTabs, 300);
+    setTimeout(ensureXTabs, 800);
+  });
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.app-navbtn[data-section="sectionX"]');
+    if(btn){ setTimeout(ensureXTabs, 30); }
+  }, true);
+})();
+</script>
+
+
+<script id="hc-x-tabs-rebuild-script">
+(function(){
+  function activate(tabName){
+    var root = document.getElementById('hcXRebuilt');
+    if(!root) return;
+    root.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
+    });
+    root.querySelectorAll('.hc-x-panel').forEach(function(panel){
+      panel.classList.toggle('active', panel.id === 'hc-x-panel-' + tabName);
+    });
+  }
+
+  function build(){
+    var sectionX = document.getElementById('sectionX');
+    if(!sectionX) return;
+
+    var title = sectionX.querySelector('.page-title');
+    var pageMain = document.getElementById('pageMain');
+    var autoInput = document.getElementById('xAutoPostTitle');
+    var autoCard = autoInput ? autoInput.closest('.card') : null;
+    var drawer = document.getElementById('accountsDrawer');
+
+    if(!title || !pageMain || !autoCard || !drawer) return;
+
+    var root = document.getElementById('hcXRebuilt');
+    if(!root){
+      root = document.createElement('div');
+      root.id = 'hcXRebuilt';
+      root.className = 'hc-x-rebuilt';
+      root.innerHTML = [
+        '<div class="hc-x-tabbar" role="tablist" aria-label="Xタブ">',
+        '  <button class="hc-x-tabbtn active" type="button" data-tab="compose">投稿作成</button>',
+        '  <button class="hc-x-tabbtn" type="button" data-tab="autopost">自動ポスト</button>',
+        '  <button class="hc-x-tabbtn" type="button" data-tab="account">アカウント</button>',
+        '</div>',
+        '<div class="hc-x-panel active" id="hc-x-panel-compose"></div>',
+        '<div class="hc-x-panel" id="hc-x-panel-autopost"></div>',
+        '<div class="hc-x-panel" id="hc-x-panel-account"></div>'
+      ].join('');
+      if(title.nextSibling){
+        title.parentNode.insertBefore(root, title.nextSibling);
+      }else{
+        sectionX.appendChild(root);
+      }
+    }
+
+    var composePanel = document.getElementById('hc-x-panel-compose');
+    var autopostPanel = document.getElementById('hc-x-panel-autopost');
+    var accountPanel = document.getElementById('hc-x-panel-account');
+
+    if(pageMain.parentElement !== composePanel){
+      composePanel.appendChild(pageMain);
+    }
+    if(autoCard.parentElement !== autopostPanel){
+      autopostPanel.appendChild(autoCard);
+    }
+    if(drawer.parentElement !== accountPanel){
+      accountPanel.appendChild(drawer);
+    }
+
+    // show embedded account panel
+    drawer.classList.add('show','open');
+    drawer.setAttribute('aria-hidden','false');
+    drawer.style.display = 'block';
+
+    // remove legacy hidden license content if present
+    var licTab = drawer.querySelector('.drawerTab[data-tab="lic"]');
+    if(licTab) licTab.remove();
+    var licPanel = document.getElementById('drawerTab_lic');
+    if(licPanel) licPanel.remove();
+
+    root.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
+      if(btn.dataset.bound) return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', function(){
+        activate(btn.getAttribute('data-tab'));
+      });
+    });
+
+    activate('compose');
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    build();
+    setTimeout(build, 60);
+    setTimeout(build, 300);
+    setTimeout(build, 900);
+  });
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.app-navbtn[data-section="sectionX"]');
+    if(btn){
+      setTimeout(build, 50);
+      setTimeout(function(){ activate('compose'); }, 120);
+    }
+  }, true);
+})();
+</script>
+
+</body>
+</html>
