@@ -1,56 +1,113 @@
-<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AIでSNS運用を効率化する方法 | SNSマーケティングAIツール入門 | Hyper Coreブログ</title><meta name="description" content="AIでSNS運用を効率化する方法を解説。投稿文作成、分析補助、返信文作成など、SNSマーケティングAIツールの活用法を紹介します。">
-<link rel="canonical" href="https://snsjidoka.com/blog/ai-sns-marketing.html"><meta name="robots" content="index,follow"><style>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIでSNS運用を効率化する方法 | SNSマーケティングAIツール入門 | Hyper Coreブログ</title>
+<meta name="description" content="AIでSNS運用を効率化する方法を解説。投稿文作成、分析補助、返信文作成など、SNSマーケティングAIツールの活用法を紹介します。">
+<link rel="canonical" href="https://snsjidoka.com/blog/ai-sns-marketing.html">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="AIでSNS運用を効率化する方法 | SNSマーケティングAIツール入門 | Hyper Coreブログ">
+<meta property="og:description" content="AIでSNS運用を効率化する方法を解説。投稿文作成、分析補助、返信文作成など、SNSマーケティングAIツールの活用法を紹介します。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://snsjidoka.com/blog/ai-sns-marketing.html">
+<meta name="twitter:card" content="summary_large_image">
+<style>
 :root{
-  --bg:#06101f;--bg2:#0a1830;--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.12);
-  --text:#eef4ff;--muted:#aab7d5;--accent:#64d7ff;--accent2:#8f6bff;
+  --bg:#050914;--bg-soft:#0b1224;--bg-card:rgba(15,24,44,.78);--line:rgba(255,255,255,.09);
+  --text:#eef4ff;--muted:#aeb9d4;--accent:#5de1ff;--accent2:#8a6cff;--accent3:#1cc8a0;
+  --shadow:0 20px 60px rgba(0,0,0,.35);--radius:24px;
 }
-*{box-sizing:border-box} html,body{margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Sans","Yu Gothic UI",sans-serif;color:var(--text);
-background:radial-gradient(circle at top left, rgba(127,90,240,.18), transparent 34%),
-radial-gradient(circle at top right, rgba(0,212,255,.14), transparent 28%),
-linear-gradient(180deg, var(--bg), var(--bg2));line-height:1.7}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Sans","Yu Gothic UI",sans-serif;
+background:radial-gradient(1000px 500px at 10% -10%, rgba(93,225,255,.16), transparent 55%),radial-gradient(900px 500px at 100% 0%, rgba(138,108,255,.14), transparent 50%),linear-gradient(180deg,#040812 0%, #07101f 42%, #081325 100%);line-height:1.75}
 a{color:var(--accent);text-decoration:none} img{max-width:100%;display:block}
-.wrap{max-width:1120px;margin:0 auto;padding:24px}
-.nav{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
-.brand{font-size:28px;font-weight:800;letter-spacing:.02em;color:#fff}
-.navlinks{display:flex;gap:18px;flex-wrap:wrap}.navlinks a{color:#dce7ff}
-.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;align-items:center;padding:48px 0 24px}
-.badge{display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(100,215,255,.12);border:1px solid rgba(100,215,255,.25);color:#dff8ff;font-size:14px;font-weight:700;margin-bottom:14px}
-h1{font-size:56px;line-height:1.05;margin:0 0 16px} h2{font-size:34px;line-height:1.2;margin:0 0 16px} h3{font-size:22px;line-height:1.3;margin:0 0 10px}
-.lead{font-size:18px;color:var(--muted);max-width:780px}
-.cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:24px}
-.btn{display:inline-block;padding:14px 20px;border-radius:14px;font-weight:800;border:1px solid var(--line)}
-.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#021120;border:none}
-.btn.secondary{background:rgba(255,255,255,.06);color:#fff}
-.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;backdrop-filter: blur(10px)}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.container{max-width:1180px;margin:0 auto;padding:0 20px}
+.topbar{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:rgba(5,9,20,.55);border-bottom:1px solid rgba(255,255,255,.06)}
+.nav{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:12px;color:#fff;font-weight:800;letter-spacing:.02em}
+.brand-badge{width:40px;height:40px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 24px rgba(93,225,255,.18)}
+.brand span{font-size:24px}
+.navlinks{display:flex;gap:18px;flex-wrap:wrap;align-items:center}.navlinks a{color:#dbe7ff;font-size:15px}
+.navlinks .cta-link{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05)}
+.hero{padding:64px 0 36px;display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:center}
+.hero-card,.glass{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)),linear-gradient(135deg, rgba(93,225,255,.06), rgba(138,108,255,.08));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.hero-card{padding:34px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid rgba(93,225,255,.2);background:rgba(93,225,255,.08);color:#dffbff;font-weight:700;font-size:13px}
+h1{font-size:clamp(36px,6vw,68px);line-height:1.04;margin:16px 0 16px;letter-spacing:-.03em}
+.lead{font-size:clamp(16px,2vw,19px);color:var(--muted);max-width:760px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 18px;border-radius:14px;font-weight:800;border:1px solid var(--line)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#061221;border:none}
+.btn-secondary{background:rgba(255,255,255,.05);color:#fff}
+.hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:22px}
+.stat{padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.stat strong{display:block;font-size:26px;line-height:1.1}
+.phone-mock{padding:18px;position:relative;overflow:hidden}
+.phone-inner{border-radius:28px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(9,19,37,.95), rgba(7,14,29,.92));padding:20px;min-height:540px}
+.mini-chip{display:inline-flex;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(93,225,255,.08);color:#def8ff;border:1px solid rgba(93,225,255,.18)}
+.mini-grid{display:grid;gap:12px;margin-top:16px}
+.mini-box{min-height:88px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.04);padding:16px}
 .section{padding:64px 0}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
-.kpi{padding:18px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
-.kpi strong{display:block;font-size:28px}
-.list{padding-left:20px;color:var(--muted)}
-.price{font-size:44px;font-weight:800}.small{font-size:14px;color:var(--muted)}
-.footer{padding:40px 0 60px;color:var(--muted);border-top:1px solid var(--line);margin-top:30px}
-.article h1{font-size:42px}.article p,.article li{color:#d7e3ff}.article .meta{color:var(--muted);font-size:14px;margin-bottom:18px}
-@media (max-width:900px){.hero,.grid3,.grid2,.kpis{grid-template-columns:1fr} h1{font-size:40px}}
-</style></head><body>
-<header class="wrap">
-  <div class="nav">
-    <a class="brand" href="/index.html">Hyper Core</a>
+.section-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:22px}
+.section-head p{max-width:720px;color:var(--muted);margin:0}
+h2{font-size:clamp(28px,4vw,42px);line-height:1.1;margin:0 0 6px;letter-spacing:-.03em}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.card{padding:24px}.card h3{font-size:22px;margin:0 0 10px}.card p{margin:0;color:var(--muted)}.card ul{margin:10px 0 0;padding-left:18px;color:var(--muted)}
+.highlight{background:linear-gradient(135deg, rgba(93,225,255,.10), rgba(138,108,255,.10))}
+.feature-tag{display:inline-block;margin-bottom:12px;font-size:12px;font-weight:800;letter-spacing:.08em;color:#9ae9ff}
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.price-card{padding:26px;position:relative;overflow:hidden}
+.price-card.popular::after{content:"おすすめ";position:absolute;top:18px;right:18px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;background:rgba(28,200,160,.14);color:#cffff1;border:1px solid rgba(28,200,160,.2)}
+.price{font-size:46px;line-height:1;font-weight:900;letter-spacing:-.03em;margin:10px 0}
+.small{font-size:14px;color:var(--muted)}
+.blog-list{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.blog-card{padding:24px}.blog-card p{color:var(--muted)}
+.faq{display:grid;gap:14px}.faq-item{padding:20px}.faq-item h3{font-size:18px;margin:0 0 8px}
+.footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 60px;color:var(--muted)}
+.article-wrap{max-width:860px}.article-hero{padding:42px 0 16px}
+.article-title{font-size:clamp(30px,5vw,52px);line-height:1.1;margin:14px 0 12px;letter-spacing:-.03em}
+.article-meta{color:var(--muted);font-size:14px}.article-card{padding:26px}
+.article-card p,.article-card li{font-size:17px;color:#dbe5fb}.article-card h2{font-size:clamp(24px,4vw,34px);margin:28px 0 10px}.article-card ul{padding-left:20px}
+.sep{height:1px;background:rgba(255,255,255,.06);margin:20px 0}
+@media (max-width:980px){.hero,.grid-3,.grid-2,.pricing,.blog-list{grid-template-columns:1fr}}
+@media (max-width:720px){.container{padding:0 16px}.nav{align-items:flex-start;padding:14px 0}.brand span{font-size:22px}.navlinks{gap:12px}.hero{padding:34px 0 20px}.hero-card{padding:24px}.phone-inner{min-height:auto}.hero-stats{grid-template-columns:1fr 1fr}.section{padding:44px 0}.card,.price-card,.blog-card,.article-card{padding:20px}.article-card p,.article-card li{font-size:16px;line-height:1.85}}
+</style>
+
+</head>
+<body>
+
+<div class="topbar">
+  <div class="container nav">
+    <a class="brand" href="/index.html"><div class="brand-badge"></div><span>Hyper Core</span></a>
     <nav class="navlinks">
       <a href="/features.html">機能</a>
       <a href="/pricing.html">料金</a>
       <a href="/download.html">導入</a>
       <a href="/blog/sns-automation.html">ブログ</a>
+      <a class="cta-link" href="/app/">ツールを開く</a>
     </nav>
   </div>
-</header>
+</div>
 
-<main class="wrap article"><section class="section"><div class="meta">Hyper Coreブログ / SNS自動化</div><h1>AIでSNS運用を効率化する方法 | SNSマーケティングAIツール入門</h1><p class="lead">AIでSNS運用を効率化する方法を解説。投稿文作成、分析補助、返信文作成など、SNSマーケティングAIツールの活用法を紹介します。</p></section>
-<section class="section card"><p>AIを使ったSNS運用では、投稿文作成の時短、アイデア出し、返信文のたたき台作成が特に役立ちます。ツールと組み合わせることで、運用の継続性を高められます。</p><h2>AI活用のポイント</h2><ul><li>テンプレを用意する</li><li>ターゲットを明確にする</li><li>投稿後の反応を見て改善する</li></ul><p><a href="/download.html">Hyper Coreの導入方法を見る</a></p></section></main>
-<footer class="wrap footer">
-  <div>© 2026 Hyper Core / SNS自動化ツール</div>
+
+<main class="container article-wrap">
+  <section class="article-hero"><div class="eyebrow">BLOG / AI SNS運用</div><h1 class="article-title">AIでSNS運用を効率化する方法 | SNSマーケティングAIツール入門</h1><div class="article-meta">Hyper Coreブログ</div></section>
+  <section class="glass article-card">
+    <p>AIを使ったSNS運用では、投稿文作成の時短、アイデア出し、返信文のたたき台作成が特に役立ちます。ツールと組み合わせることで、運用の継続性を高められます。</p>
+    <h2>AI活用のポイント</h2>
+    <ul><li>テンプレを用意する</li><li>ターゲットを明確にする</li><li>投稿後の反応を見て改善する</li></ul>
+    <div class="sep"></div><p><a href="/download.html">Hyper Coreの導入方法を見る</a></p>
+  </section>
+</main>
+
+
+<footer class="footer">
+  <div class="container">
+    <div>© 2026 Hyper Core / SNS自動化ツール</div>
+  </div>
 </footer>
-</body></html>
+
+</body>
+</html>
