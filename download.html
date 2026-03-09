@@ -69,9 +69,8 @@ img{max-width:100%;display:block}
 .brand{
   display:flex; align-items:center; gap:14px; color:#fff;
 }
-.brand-mark{
+.brand-logo{
   width:52px; height:52px; border-radius:18px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
   box-shadow:0 12px 30px rgba(97,226,255,.18);
   flex:0 0 auto;
 }
@@ -246,7 +245,7 @@ h2{
     linear-gradient(135deg, rgba(97,226,255,.08), rgba(142,109,255,.08));
 }
 .contact-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
-.contact-mail{font-size:24px;font-weight:900;word-break:break-word}
+.contact-mail{font-size:24px;font-weight:900;word-break:break-word;overflow-wrap:anywhere}
 .notice{
   padding:18px;border-radius:20px;border:1px solid rgba(255,142,167,.18);
   background:rgba(255,142,167,.06); color:#ffe6ee;
@@ -274,6 +273,9 @@ h2{
 }
 @media (max-width:720px){
   .container{padding:0 16px}
+  .nav{flex-direction:column;align-items:flex-start;gap:14px}
+  .navlinks{justify-content:flex-start;gap:14px 20px}
+  .brand-logo{width:48px;height:48px;border-radius:16px}
   .nav{grid-template-columns:1fr;align-items:start;padding:14px 0}
   .navlinks{justify-content:flex-start;gap:14px 18px}
   .brand-text{font-size:22px}
@@ -291,7 +293,7 @@ h2{
 <div class="topbar">
   <div class="container nav">
     <a class="brand" href="/index.html">
-      <div class="brand-mark"></div>
+      <img src="/icon-180.png" alt="Hyper Core" class="brand-logo">
       <div class="brand-text">Hyper Core</div>
     </a>
     <nav class="navlinks">
