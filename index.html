@@ -2,419 +2,96 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SNS自動化ツール Hyper Core | AIでX・Threads運用を効率化</title>
-<meta name="description" content="SNS自動化ツールHyper Core。AI投稿生成、X自動投稿、Threads条件返信、DM候補生成、Telegram連携まで1つで管理。SNS運用を効率化したい方向けの国産ツール。">
-<link rel="canonical" href="https://snsjidoka.com/">
-<meta name="robots" content="index,follow">
-<meta property="og:title" content="SNS自動化ツール Hyper Core | AIでX・Threads運用を効率化">
-<meta property="og:description" content="SNS自動化ツールHyper Core。AI投稿生成、X自動投稿、Threads条件返信、DM候補生成、Telegram連携まで1つで管理。SNS運用を効率化したい方向けの国産ツール。">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://snsjidoka.com/">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hyper Core | SNS自動化ツール</title>
+
+<meta name="description" content="Hyper CoreはXやThreadsの投稿・返信を自動化するSNS運用ツール。AI投稿生成・自動返信・投稿管理を一括で行えるSNS自動化ツールです。">
+
 <style>
-:root{
-  --bg:#050814;
-  --bg2:#0a1224;
-  --panel:rgba(13,20,38,.72);
-  --panel-strong:rgba(10,16,30,.88);
-  --line:rgba(255,255,255,.08);
-  --line2:rgba(93,225,255,.18);
-  --text:#eef4ff;
-  --muted:#aeb8d3;
-  --accent:#5de1ff;
-  --accent2:#8b6cff;
-  --accent3:#24d3a6;
-  --shadow:0 24px 80px rgba(0,0,0,.38);
-  --radius:24px;
-  --radius-sm:18px;
-  --max:1180px;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
 body{
-  margin:0;
-  color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Sans","Yu Gothic UI",sans-serif;
-  background:
-    radial-gradient(900px 500px at 10% -10%, rgba(93,225,255,.15), transparent 60%),
-    radial-gradient(800px 500px at 100% 0%, rgba(139,108,255,.14), transparent 55%),
-    linear-gradient(180deg,#040812 0%,#081020 44%,#091426 100%);
-  line-height:1.8;
-  letter-spacing:.01em;
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;
+background:#0b1020;
+color:#f2f4ff;
+line-height:1.7;
 }
-a{color:var(--accent);text-decoration:none}
-img{max-width:100%;display:block}
-.container{max-width:var(--max);margin:0 auto;padding:0 20px}
-.topbar{
-  position:sticky; top:0; z-index:20;
-  background:rgba(5,8,20,.56);
-  backdrop-filter:blur(16px);
-  border-bottom:1px solid rgba(255,255,255,.05);
+
+header{
+padding:40px 20px;
+text-align:center;
 }
-.nav{
-  min-height:76px;
-  display:flex; align-items:center; justify-content:space-between; gap:14px;
-}
-.brand{
-  display:flex; align-items:center; gap:12px;
-  font-weight:900; color:#fff;
-}
-.brand-mark{
-  width:42px; height:42px; border-radius:14px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  box-shadow:0 10px 26px rgba(93,225,255,.18);
-}
-.brand-name{font-size:24px; letter-spacing:.02em}
-.navlinks{display:flex; gap:18px; flex-wrap:wrap; align-items:center}
-.navlinks a{color:#dfe9ff; font-size:15px; font-weight:700}
-.navlinks a:hover{color:#fff}
-.hero{
-  padding:72px 0 34px;
-  display:grid; grid-template-columns:1.15fr .85fr; gap:28px; align-items:center;
-}
-.glass{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.03)),
-    linear-gradient(135deg, rgba(93,225,255,.05), rgba(139,108,255,.07));
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-}
-.hero-card{padding:34px}
-.eyebrow{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:8px 14px;
-  border-radius:999px;
-  background:rgba(93,225,255,.09);
-  border:1px solid rgba(93,225,255,.16);
-  color:#dffbff;
-  font-size:13px;
-  font-weight:800;
-}
+
 h1{
-  margin:16px 0 14px;
-  font-size:clamp(38px,6vw,72px);
-  line-height:1.02;
-  letter-spacing:-.04em;
+font-size:42px;
+margin-bottom:10px;
 }
-.lead{
-  margin:0;
-  color:var(--muted);
-  font-size:clamp(16px,2vw,19px);
-  max-width:760px;
-}
-.hero-actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:24px}
+
 .btn{
-  display:inline-flex; align-items:center; justify-content:center;
-  min-height:48px; padding:0 18px;
-  border-radius:14px; font-weight:900;
-  border:1px solid var(--line);
+display:inline-block;
+margin-top:20px;
+padding:14px 24px;
+background:#5df2ff;
+color:#000;
+font-weight:bold;
+border-radius:8px;
+text-decoration:none;
 }
-.btn-primary{
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  color:#05111d; border:none;
+
+section{
+max-width:1000px;
+margin:60px auto;
+padding:20px;
 }
-.btn-secondary{
-  background:rgba(255,255,255,.05);
-  color:#fff;
+
+.card{
+background:#141b33;
+padding:24px;
+border-radius:12px;
+margin-bottom:20px;
 }
-.hero-stats{
-  display:grid; grid-template-columns:repeat(2,1fr); gap:12px;
-  margin-top:24px;
+
+footer{
+margin-top:80px;
+padding:40px 20px;
+text-align:center;
+border-top:1px solid rgba(255,255,255,.08);
 }
-.stat{
-  padding:16px 18px;
-  border-radius:18px;
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--line);
-}
-.stat strong{display:block;font-size:28px;line-height:1.05}
-.stat span{display:block;color:var(--muted);font-size:14px;margin-top:4px}
-.dashboard-mock{padding:18px}
-.mock-shell{
-  min-height:540px;
-  padding:18px;
-  border-radius:28px;
-  border:1px solid rgba(255,255,255,.08);
-  background:linear-gradient(180deg, rgba(9,16,31,.96), rgba(8,14,26,.94));
-}
-.mock-head{
-  display:flex; justify-content:space-between; align-items:center;
-  margin-bottom:14px;
-}
-.mock-chip{
-  display:inline-flex; padding:8px 12px; border-radius:999px;
-  font-size:12px; font-weight:800;
-  background:rgba(93,225,255,.09);
-  border:1px solid rgba(93,225,255,.16);
-  color:#e7fbff;
-}
-.mock-grid{display:grid; gap:12px}
-.mock-card{
-  min-height:90px;
-  border-radius:18px;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.04);
-  padding:16px;
-}
-.mock-card strong{display:block;font-size:18px}
-.mock-card span{display:block;color:var(--muted);font-size:14px;margin-top:6px}
-.section{padding:64px 0}
-.section-head{
-  display:flex; justify-content:space-between; gap:16px; align-items:end;
-  margin-bottom:22px;
-}
-.section-head p{margin:0; max-width:760px; color:var(--muted)}
-h2{
-  margin:0 0 6px;
-  font-size:clamp(28px,4vw,44px);
-  line-height:1.08;
-  letter-spacing:-.03em;
-}
-.grid-2{display:grid; grid-template-columns:repeat(2,1fr); gap:18px}
-.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
-.card{padding:24px}
-.card h3{margin:0 0 10px; font-size:22px}
-.card p{margin:0; color:var(--muted)}
-.card ul{margin:12px 0 0; padding-left:18px; color:var(--muted)}
-.kicker{
-  display:inline-block; margin-bottom:12px;
-  font-size:12px; font-weight:900; color:#a6eeff;
-  letter-spacing:.08em;
-}
-.highlight{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)),
-    linear-gradient(135deg, rgba(93,225,255,.09), rgba(139,108,255,.09));
-}
-.steps{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
-.step{
-  padding:22px; border-radius:22px;
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--line);
-}
-.step-num{
-  width:36px; height:36px; border-radius:999px;
-  display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  color:#06111c; font-weight:900; margin-bottom:14px;
-}
-.pricing{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
-.price-card{padding:26px; position:relative; overflow:hidden}
-.price-card.popular::after{
-  content:"おすすめ";
-  position:absolute; top:16px; right:16px;
-  padding:6px 10px; border-radius:999px;
-  font-size:12px; font-weight:900;
-  background:rgba(36,211,166,.14);
-  border:1px solid rgba(36,211,166,.2);
-  color:#d8fff4;
-}
-.price{
-  margin:10px 0 8px;
-  font-size:48px; line-height:1; font-weight:900; letter-spacing:-.04em;
-}
-.small{color:var(--muted); font-size:14px}
-.blog-wrap{
-  display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:24px;
-  align-items:start;
-}
-.article-list{display:grid; gap:18px}
-.article-card{padding:24px}
-.article-card p{color:var(--muted)}
-.sidebar{
-  position:sticky; top:96px;
-  padding:20px;
-}
-.sidebar h3{margin:0 0 8px}
-.sidebar p{margin:0 0 12px; color:var(--muted)}
-.contact-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:18px}
-.footer{
-  margin-top:24px;
-  padding:34px 0 60px;
-  border-top:1px solid rgba(255,255,255,.05);
-  color:var(--muted);
-}
-.article-page{max-width:1180px}
-.article-layout{
-  display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:24px; align-items:start;
-}
-.article-main{min-width:0}
-.article-hero{padding:46px 0 16px}
-.article-title{
-  margin:14px 0 12px;
-  font-size:clamp(32px,5vw,54px);
-  line-height:1.08; letter-spacing:-.04em;
-}
-.article-meta{color:var(--muted); font-size:14px}
-.article-content{padding:26px}
-.article-content p,.article-content li{font-size:17px; color:#dbe6ff}
-.article-content h2{
-  margin-top:30px;
-  font-size:clamp(24px,4vw,34px);
-}
-.article-content ul{padding-left:20px}
-.sep{height:1px;background:rgba(255,255,255,.06);margin:22px 0}
-.toc{padding:20px}
-.toc h3{margin:0 0 10px}
-.toc a{display:block; color:#dbe6ff; margin:8px 0}
-.cta-box{
-  padding:20px;
-  border:1px solid rgba(93,225,255,.16);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)),
-    linear-gradient(135deg, rgba(93,225,255,.08), rgba(139,108,255,.08));
-}
-.contact-mail{
-  font-size:22px; font-weight:900;
-  word-break:break-word;
-}
-@media (max-width:1080px){
-  .blog-wrap,.article-layout,.contact-grid{grid-template-columns:1fr}
-  .sidebar,.toc{position:static}
-}
-@media (max-width:960px){
-  .hero,.grid-2,.grid-3,.steps,.pricing{grid-template-columns:1fr}
-}
-@media (max-width:720px){
-  .container{padding:0 16px}
-  .nav{align-items:flex-start; padding:14px 0}
-  .brand-name{font-size:22px}
-  .navlinks{gap:12px}
-  .hero{padding:38px 0 22px}
-  .hero-card,.card,.price-card,.article-card,.article-content,.sidebar,.toc{padding:20px}
-  .mock-shell{min-height:auto}
-  .hero-stats{grid-template-columns:1fr 1fr}
-  .section{padding:44px 0}
-  .article-content p,.article-content li{font-size:16px; line-height:1.9}
+
+footer a{
+color:#9bb6ff;
+text-decoration:none;
+margin:0 10px;
+font-size:14px;
 }
 </style>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Hyper Core","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"AI投稿生成、X自動投稿、Threads条件返信、DM候補生成を備えたSNS自動化ツール","offers":[{"@type":"Offer","price":"1980","priceCurrency":"JPY","name":"月額プラン"},{"@type":"Offer","price":"14800","priceCurrency":"JPY","name":"年額プラン"},{"@type":"Offer","price":"49800","priceCurrency":"JPY","name":"永久プラン"}]}</script>
 </head>
+
 <body>
 
-<div class="topbar">
-  <div class="container nav">
-    <a class="brand" href="/index.html">
-      <div class="brand-mark"></div>
-      <span class="brand-name">Hyper Core</span>
-    </a>
-    <nav class="navlinks">
-      <a href="/features.html">機能</a>
-      <a href="/pricing.html">料金</a>
-      <a href="/download.html">導入</a>
-      <a href="/contact.html">お問い合わせ</a>
-      <a href="/blog/sns-automation.html">ブログ</a>
-    </nav>
-  </div>
+<header>
+<h1>Hyper Core</h1>
+<p>SNS自動化ツール</p>
+<a class="btn" href="/app/">ツールを開く</a>
+</header>
+
+<section>
+<div class="card">
+<h2>Hyper Coreとは</h2>
+SNS投稿・返信・管理を自動化するSNS運用ツールです。
+</div>
+</section>
+
+<footer>
+
+<p>© 2026 Hyper Core / SNS自動化ツール</p>
+
+<div>
+<a href="/privacy.html">プライバシーポリシー</a>
+<a href="/terms.html">利用規約</a>
+<a href="/tokutei.html">特定商取引法</a>
+<a href="/contact.html">お問い合わせ</a>
 </div>
 
-
-<main class="container">
-  <section class="hero">
-    <div class="glass hero-card">
-      <span class="eyebrow">SNS自動化ツール / AI投稿生成</span>
-      <h1>SNS運用を、<br>もっと速く、もっと強く。</h1>
-      <p class="lead">Hyper Coreは、X自動投稿・Threads条件返信・DM候補生成・Telegram連携を1つにまとめたSNS自動化ツールです。投稿、返信、管理を一括で効率化し、日々の運用を軽くします。</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/download.html">導入方法を見る</a>
-        <a class="btn btn-secondary" href="/pricing.html">料金を見る</a>
-      </div>
-      <div class="hero-stats">
-        <div class="stat"><strong>X</strong><span>予約投稿 / 管理</span></div>
-        <div class="stat"><strong>Threads</strong><span>条件返信 / リード</span></div>
-        <div class="stat"><strong>AI</strong><span>投稿文作成補助</span></div>
-        <div class="stat"><strong>Telegram</strong><span>Bot送信</span></div>
-      </div>
-    </div>
-    <div class="glass dashboard-mock">
-      <div class="mock-shell">
-        <div class="mock-head">
-          <span class="mock-chip">HYPER CORE UI</span>
-          <span class="small">X / Threads / Telegram</span>
-        </div>
-        <div class="mock-grid">
-          <div class="mock-card"><strong>投稿作成</strong><span>X / Threads / Telegramの投稿をまとめて作成</span></div>
-          <div class="mock-card"><strong>条件返信</strong><span>Threadsのキーワード返信や自動処理を整理</span></div>
-          <div class="mock-card"><strong>DM候補生成</strong><span>見込み顧客対応のたたき台を素早く作成</span></div>
-          <div class="mock-card"><strong>アカウント管理</strong><span>複数アカウントをまとめて扱いやすい構成</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <h2>SNS自動化とは</h2>
-        <p>SNS自動化とは、投稿、返信、テンプレ管理、DM候補作成などをツールで効率化することです。運用を止めずに、手作業の負担を減らせます。</p>
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="glass card highlight">
-        <span class="kicker">TIME SAVING</span>
-        <h3>投稿の継続がしやすい</h3>
-        <p>予約投稿やテンプレ管理により、忙しい日でも発信を続けやすくなります。</p>
-      </div>
-      <div class="glass card">
-        <span class="kicker">LEAD FLOW</span>
-        <h3>返信・DM対応を効率化</h3>
-        <p>Threadsのコメント条件に応じて返信やDM候補を管理し、見込み客対応の手間を減らせます。</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <h2>Hyper Coreの主な機能</h2>
-        <p>見やすく、触りやすい管理画面で、SNS自動化に必要な操作をまとめています。</p>
-      </div>
-    </div>
-    <div class="grid-3">
-      <div class="glass card"><span class="kicker">X</span><h3>X自動投稿</h3><p>Xの投稿作成、予約保存、テスト投稿、アカウント管理をまとめて操作できます。</p></div>
-      <div class="glass card"><span class="kicker">THREADS</span><h3>Threads条件返信</h3><p>指定キーワードに合わせた返信文の設定や、自動処理シミュレーターで動作確認が可能です。</p></div>
-      <div class="glass card"><span class="kicker">AI</span><h3>AI投稿生成</h3><p>テンプレとAIを組み合わせて、SNS用テキストを効率よく作成できます。</p></div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <h2>導入までの流れ</h2>
-        <p>購入後に迷わないよう、Hyper Coreの導入フローをシンプルに整理しています。</p>
-      </div>
-    </div>
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><h3>料金を確認</h3><p class="small">月額、年額、永久から用途に合うプランを選びます。</p></div>
-      <div class="step"><div class="step-num">2</div><h3>導入ページへ</h3><p class="small">導入手順、ホーム画面追加、利用開始までを確認します。</p></div>
-      <div class="step"><div class="step-num">3</div><h3>ライセンス認証</h3><p class="small">発行されたライセンスキーでツール本体を認証します。</p></div>
-      <div class="step"><div class="step-num">4</div><h3>運用を開始</h3><p class="small">X、Threads、Telegramを設定してSNS自動化を始めます。</p></div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-head">
-      <div>
-        <h2>検索から入りやすい記事導線</h2>
-        <p>SEOで強いキーワードを取りに行くために、トップから関連ページへ自然につなげています。</p>
-      </div>
-    </div>
-    <div class="grid-2">
-      <a class="glass card" href="/blog/sns-automation.html"><h3>SNS自動化とは？</h3><p>メリット、導入時の考え方、運用を効率化するポイントを整理。</p></a>
-      <a class="glass card" href="/blog/x-auto-post.html"><h3>X自動投稿ツールとは？</h3><p>予約投稿、投稿テンプレ、AI投稿生成をどう活用するかを解説。</p></a>
-      <a class="glass card" href="/blog/threads-auto-post.html"><h3>Threads自動化のやり方</h3><p>条件返信、DM候補、リード一覧の考え方をまとめています。</p></a>
-      <a class="glass card" href="/blog/ai-sns-marketing.html"><h3>AIでSNS運用を効率化する方法</h3><p>AIとSNS自動化ツールを組み合わせる基本戦略を解説。</p></a>
-    </div>
-  </section>
-</main>
-
-
-<footer class="footer">
-  <div class="container">
-    <div>© 2026 Hyper Core / SNS自動化ツール</div>
-  </div>
 </footer>
 
 </body>
