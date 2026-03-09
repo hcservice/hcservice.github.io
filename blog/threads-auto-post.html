@@ -14,65 +14,281 @@
 <meta name="twitter:card" content="summary_large_image">
 <style>
 :root{
-  --bg:#050914;--bg-soft:#0b1224;--bg-card:rgba(15,24,44,.78);--line:rgba(255,255,255,.09);
-  --text:#eef4ff;--muted:#aeb9d4;--accent:#5de1ff;--accent2:#8a6cff;--accent3:#1cc8a0;
-  --shadow:0 20px 60px rgba(0,0,0,.35);--radius:24px;
+  --bg:#050814;
+  --bg2:#0a1224;
+  --panel:rgba(13,20,38,.72);
+  --panel-strong:rgba(10,16,30,.88);
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(93,225,255,.18);
+  --text:#eef4ff;
+  --muted:#aeb8d3;
+  --accent:#5de1ff;
+  --accent2:#8b6cff;
+  --accent3:#24d3a6;
+  --shadow:0 24px 80px rgba(0,0,0,.38);
+  --radius:24px;
+  --radius-sm:18px;
+  --max:1180px;
 }
-*{box-sizing:border-box} html{scroll-behavior:smooth}
-body{margin:0;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Sans","Yu Gothic UI",sans-serif;
-background:radial-gradient(1000px 500px at 10% -10%, rgba(93,225,255,.16), transparent 55%),radial-gradient(900px 500px at 100% 0%, rgba(138,108,255,.14), transparent 50%),linear-gradient(180deg,#040812 0%, #07101f 42%, #081325 100%);line-height:1.75}
-a{color:var(--accent);text-decoration:none} img{max-width:100%;display:block}
-.container{max-width:1180px;margin:0 auto;padding:0 20px}
-.topbar{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:rgba(5,9,20,.55);border-bottom:1px solid rgba(255,255,255,.06)}
-.nav{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{display:flex;align-items:center;gap:12px;color:#fff;font-weight:800;letter-spacing:.02em}
-.brand-badge{width:40px;height:40px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 24px rgba(93,225,255,.18)}
-.brand span{font-size:24px}
-.navlinks{display:flex;gap:18px;flex-wrap:wrap;align-items:center}.navlinks a{color:#dbe7ff;font-size:15px}
-.navlinks .cta-link{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05)}
-.hero{padding:64px 0 36px;display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:center}
-.hero-card,.glass{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)),linear-gradient(135deg, rgba(93,225,255,.06), rgba(138,108,255,.08));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Sans","Yu Gothic UI",sans-serif;
+  background:
+    radial-gradient(900px 500px at 10% -10%, rgba(93,225,255,.15), transparent 60%),
+    radial-gradient(800px 500px at 100% 0%, rgba(139,108,255,.14), transparent 55%),
+    linear-gradient(180deg,#040812 0%,#081020 44%,#091426 100%);
+  line-height:1.8;
+  letter-spacing:.01em;
+}
+a{color:var(--accent);text-decoration:none}
+img{max-width:100%;display:block}
+.container{max-width:var(--max);margin:0 auto;padding:0 20px}
+.topbar{
+  position:sticky; top:0; z-index:20;
+  background:rgba(5,8,20,.56);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.nav{
+  min-height:76px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.brand{
+  display:flex; align-items:center; gap:12px;
+  font-weight:900; color:#fff;
+}
+.brand-mark{
+  width:42px; height:42px; border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 10px 26px rgba(93,225,255,.18);
+}
+.brand-name{font-size:24px; letter-spacing:.02em}
+.navlinks{display:flex; gap:18px; flex-wrap:wrap; align-items:center}
+.navlinks a{color:#dfe9ff; font-size:15px; font-weight:700}
+.navlinks a:hover{color:#fff}
+.hero{
+  padding:72px 0 34px;
+  display:grid; grid-template-columns:1.15fr .85fr; gap:28px; align-items:center;
+}
+.glass{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.03)),
+    linear-gradient(135deg, rgba(93,225,255,.05), rgba(139,108,255,.07));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
 .hero-card{padding:34px}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid rgba(93,225,255,.2);background:rgba(93,225,255,.08);color:#dffbff;font-weight:700;font-size:13px}
-h1{font-size:clamp(36px,6vw,68px);line-height:1.04;margin:16px 0 16px;letter-spacing:-.03em}
-.lead{font-size:clamp(16px,2vw,19px);color:var(--muted);max-width:760px}
-.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 18px;border-radius:14px;font-weight:800;border:1px solid var(--line)}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#061221;border:none}
-.btn-secondary{background:rgba(255,255,255,.05);color:#fff}
-.hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:22px}
-.stat{padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
-.stat strong{display:block;font-size:26px;line-height:1.1}
-.phone-mock{padding:18px;position:relative;overflow:hidden}
-.phone-inner{border-radius:28px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(9,19,37,.95), rgba(7,14,29,.92));padding:20px;min-height:540px}
-.mini-chip{display:inline-flex;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(93,225,255,.08);color:#def8ff;border:1px solid rgba(93,225,255,.18)}
-.mini-grid{display:grid;gap:12px;margin-top:16px}
-.mini-box{min-height:88px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.04);padding:16px}
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:rgba(93,225,255,.09);
+  border:1px solid rgba(93,225,255,.16);
+  color:#dffbff;
+  font-size:13px;
+  font-weight:800;
+}
+h1{
+  margin:16px 0 14px;
+  font-size:clamp(38px,6vw,72px);
+  line-height:1.02;
+  letter-spacing:-.04em;
+}
+.lead{
+  margin:0;
+  color:var(--muted);
+  font-size:clamp(16px,2vw,19px);
+  max-width:760px;
+}
+.hero-actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:24px}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-height:48px; padding:0 18px;
+  border-radius:14px; font-weight:900;
+  border:1px solid var(--line);
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#05111d; border:none;
+}
+.btn-secondary{
+  background:rgba(255,255,255,.05);
+  color:#fff;
+}
+.hero-stats{
+  display:grid; grid-template-columns:repeat(2,1fr); gap:12px;
+  margin-top:24px;
+}
+.stat{
+  padding:16px 18px;
+  border-radius:18px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--line);
+}
+.stat strong{display:block;font-size:28px;line-height:1.05}
+.stat span{display:block;color:var(--muted);font-size:14px;margin-top:4px}
+.dashboard-mock{padding:18px}
+.mock-shell{
+  min-height:540px;
+  padding:18px;
+  border-radius:28px;
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg, rgba(9,16,31,.96), rgba(8,14,26,.94));
+}
+.mock-head{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:14px;
+}
+.mock-chip{
+  display:inline-flex; padding:8px 12px; border-radius:999px;
+  font-size:12px; font-weight:800;
+  background:rgba(93,225,255,.09);
+  border:1px solid rgba(93,225,255,.16);
+  color:#e7fbff;
+}
+.mock-grid{display:grid; gap:12px}
+.mock-card{
+  min-height:90px;
+  border-radius:18px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  padding:16px;
+}
+.mock-card strong{display:block;font-size:18px}
+.mock-card span{display:block;color:var(--muted);font-size:14px;margin-top:6px}
 .section{padding:64px 0}
-.section-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:22px}
-.section-head p{max-width:720px;color:var(--muted);margin:0}
-h2{font-size:clamp(28px,4vw,42px);line-height:1.1;margin:0 0 6px;letter-spacing:-.03em}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-.card{padding:24px}.card h3{font-size:22px;margin:0 0 10px}.card p{margin:0;color:var(--muted)}.card ul{margin:10px 0 0;padding-left:18px;color:var(--muted)}
-.highlight{background:linear-gradient(135deg, rgba(93,225,255,.10), rgba(138,108,255,.10))}
-.feature-tag{display:inline-block;margin-bottom:12px;font-size:12px;font-weight:800;letter-spacing:.08em;color:#9ae9ff}
-.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.price-card{padding:26px;position:relative;overflow:hidden}
-.price-card.popular::after{content:"おすすめ";position:absolute;top:18px;right:18px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;background:rgba(28,200,160,.14);color:#cffff1;border:1px solid rgba(28,200,160,.2)}
-.price{font-size:46px;line-height:1;font-weight:900;letter-spacing:-.03em;margin:10px 0}
-.small{font-size:14px;color:var(--muted)}
-.blog-list{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-.blog-card{padding:24px}.blog-card p{color:var(--muted)}
-.faq{display:grid;gap:14px}.faq-item{padding:20px}.faq-item h3{font-size:18px;margin:0 0 8px}
-.footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0 60px;color:var(--muted)}
-.article-wrap{max-width:860px}.article-hero{padding:42px 0 16px}
-.article-title{font-size:clamp(30px,5vw,52px);line-height:1.1;margin:14px 0 12px;letter-spacing:-.03em}
-.article-meta{color:var(--muted);font-size:14px}.article-card{padding:26px}
-.article-card p,.article-card li{font-size:17px;color:#dbe5fb}.article-card h2{font-size:clamp(24px,4vw,34px);margin:28px 0 10px}.article-card ul{padding-left:20px}
-.sep{height:1px;background:rgba(255,255,255,.06);margin:20px 0}
-@media (max-width:980px){.hero,.grid-3,.grid-2,.pricing,.blog-list{grid-template-columns:1fr}}
-@media (max-width:720px){.container{padding:0 16px}.nav{align-items:flex-start;padding:14px 0}.brand span{font-size:22px}.navlinks{gap:12px}.hero{padding:34px 0 20px}.hero-card{padding:24px}.phone-inner{min-height:auto}.hero-stats{grid-template-columns:1fr 1fr}.section{padding:44px 0}.card,.price-card,.blog-card,.article-card{padding:20px}.article-card p,.article-card li{font-size:16px;line-height:1.85}}
+.section-head{
+  display:flex; justify-content:space-between; gap:16px; align-items:end;
+  margin-bottom:22px;
+}
+.section-head p{margin:0; max-width:760px; color:var(--muted)}
+h2{
+  margin:0 0 6px;
+  font-size:clamp(28px,4vw,44px);
+  line-height:1.08;
+  letter-spacing:-.03em;
+}
+.grid-2{display:grid; grid-template-columns:repeat(2,1fr); gap:18px}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+.card{padding:24px}
+.card h3{margin:0 0 10px; font-size:22px}
+.card p{margin:0; color:var(--muted)}
+.card ul{margin:12px 0 0; padding-left:18px; color:var(--muted)}
+.kicker{
+  display:inline-block; margin-bottom:12px;
+  font-size:12px; font-weight:900; color:#a6eeff;
+  letter-spacing:.08em;
+}
+.highlight{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)),
+    linear-gradient(135deg, rgba(93,225,255,.09), rgba(139,108,255,.09));
+}
+.steps{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+.step{
+  padding:22px; border-radius:22px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--line);
+}
+.step-num{
+  width:36px; height:36px; border-radius:999px;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#06111c; font-weight:900; margin-bottom:14px;
+}
+.pricing{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+.price-card{padding:26px; position:relative; overflow:hidden}
+.price-card.popular::after{
+  content:"おすすめ";
+  position:absolute; top:16px; right:16px;
+  padding:6px 10px; border-radius:999px;
+  font-size:12px; font-weight:900;
+  background:rgba(36,211,166,.14);
+  border:1px solid rgba(36,211,166,.2);
+  color:#d8fff4;
+}
+.price{
+  margin:10px 0 8px;
+  font-size:48px; line-height:1; font-weight:900; letter-spacing:-.04em;
+}
+.small{color:var(--muted); font-size:14px}
+.blog-wrap{
+  display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:24px;
+  align-items:start;
+}
+.article-list{display:grid; gap:18px}
+.article-card{padding:24px}
+.article-card p{color:var(--muted)}
+.sidebar{
+  position:sticky; top:96px;
+  padding:20px;
+}
+.sidebar h3{margin:0 0 8px}
+.sidebar p{margin:0 0 12px; color:var(--muted)}
+.contact-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:18px}
+.footer{
+  margin-top:24px;
+  padding:34px 0 60px;
+  border-top:1px solid rgba(255,255,255,.05);
+  color:var(--muted);
+}
+.article-page{max-width:1180px}
+.article-layout{
+  display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:24px; align-items:start;
+}
+.article-main{min-width:0}
+.article-hero{padding:46px 0 16px}
+.article-title{
+  margin:14px 0 12px;
+  font-size:clamp(32px,5vw,54px);
+  line-height:1.08; letter-spacing:-.04em;
+}
+.article-meta{color:var(--muted); font-size:14px}
+.article-content{padding:26px}
+.article-content p,.article-content li{font-size:17px; color:#dbe6ff}
+.article-content h2{
+  margin-top:30px;
+  font-size:clamp(24px,4vw,34px);
+}
+.article-content ul{padding-left:20px}
+.sep{height:1px;background:rgba(255,255,255,.06);margin:22px 0}
+.toc{padding:20px}
+.toc h3{margin:0 0 10px}
+.toc a{display:block; color:#dbe6ff; margin:8px 0}
+.cta-box{
+  padding:20px;
+  border:1px solid rgba(93,225,255,.16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)),
+    linear-gradient(135deg, rgba(93,225,255,.08), rgba(139,108,255,.08));
+}
+.contact-mail{
+  font-size:22px; font-weight:900;
+  word-break:break-word;
+}
+@media (max-width:1080px){
+  .blog-wrap,.article-layout,.contact-grid{grid-template-columns:1fr}
+  .sidebar,.toc{position:static}
+}
+@media (max-width:960px){
+  .hero,.grid-2,.grid-3,.steps,.pricing{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .container{padding:0 16px}
+  .nav{align-items:flex-start; padding:14px 0}
+  .brand-name{font-size:22px}
+  .navlinks{gap:12px}
+  .hero{padding:38px 0 22px}
+  .hero-card,.card,.price-card,.article-card,.article-content,.sidebar,.toc{padding:20px}
+  .mock-shell{min-height:auto}
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .section{padding:44px 0}
+  .article-content p,.article-content li{font-size:16px; line-height:1.9}
+}
 </style>
 
 </head>
@@ -80,26 +296,52 @@ h2{font-size:clamp(28px,4vw,42px);line-height:1.1;margin:0 0 6px;letter-spacing:
 
 <div class="topbar">
   <div class="container nav">
-    <a class="brand" href="/index.html"><div class="brand-badge"></div><span>Hyper Core</span></a>
+    <a class="brand" href="/index.html">
+      <div class="brand-mark"></div>
+      <span class="brand-name">Hyper Core</span>
+    </a>
     <nav class="navlinks">
       <a href="/features.html">機能</a>
       <a href="/pricing.html">料金</a>
       <a href="/download.html">導入</a>
+      <a href="/contact.html">お問い合わせ</a>
       <a href="/blog/sns-automation.html">ブログ</a>
-      <a class="cta-link" href="/app/">ツールを開く</a>
     </nav>
   </div>
 </div>
 
 
-<main class="container article-wrap">
-  <section class="article-hero"><div class="eyebrow">BLOG / Threads自動化</div><h1 class="article-title">Threads自動化のやり方 | 条件返信・DM候補生成を効率化</h1><div class="article-meta">Hyper Coreブログ</div></section>
-  <section class="glass article-card">
-    <p>Threads自動化では、コメント内容に応じた返信ルールや、見込み客対応のたたき台作成が重要です。完全放置ではなく、運用を効率化するための設計が基本です。</p>
-    <h2>Threads自動化の例</h2>
-    <ul><li>キーワード条件返信</li><li>自動処理シミュレーター</li><li>DM候補だけ生成</li><li>リード一覧管理</li></ul>
-    <div class="sep"></div><p><a href="/download.html">Hyper Coreの導入方法を見る</a></p>
+<main class="container article-page">
+  <section class="article-hero">
+    <div class="eyebrow">BLOG / Threads自動化</div>
+    <h1 class="article-title">Threads自動化のやり方 | 条件返信・DM候補生成を効率化</h1>
+    <div class="article-meta">Hyper Coreブログ</div>
   </section>
+  <div class="article-layout">
+    <div class="article-main">
+      <div class="glass article-content">
+        <p>Threads自動化では、コメント内容に応じた返信ルールや、見込み客対応のたたき台作成が重要です。完全放置ではなく、運用を効率化するための設計が基本です。</p>
+        <h2 id="sample">Threads自動化の例</h2>
+        <ul>
+          <li>キーワード条件返信</li>
+          <li>自動処理シミュレーター</li>
+          <li>DM候補だけ生成</li>
+          <li>リード一覧管理</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="sidebar glass">
+      <div class="toc">
+        <h3>目次</h3>
+        <a href="#sample">Threads自動化の例</a>
+      </div>
+      <div class="cta-box" style="margin-top:16px">
+        <h3>Hyper Core</h3>
+        <p>Threadsの条件返信やDM候補生成をまとめて扱えます。</p>
+        <a class="btn btn-primary" href="/app/">ツールを開く</a>
+      </div>
+    </aside>
+  </div>
 </main>
 
 
