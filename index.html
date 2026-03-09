@@ -1270,13 +1270,24 @@ function removeUndefinedFields(obj){
 }
 </style>
 
+
+<style id="hc-user-fix-final">
+/* user requested: remove gear, remove X license tab, keep X tabs */
+#topGearBtn,
+#sectionX #hcXTabSystem .hc-x-tabbtn[data-xtab="license"],
+#sectionX #hcXTab_license,
+#sectionX #drawerTab_lic,
+#sectionX .drawerTab[data-tab="lic"]{
+  display:none !important;
+}
+</style>
+
 </head>
 
 <body>
 
 <header class="hc-header">
   <div class="hc-title"><img class="hc-logo" src="icon-180.png" alt="Hyper Core" />SNS Hyper Core</div>
-  <button id="topGearBtn" type="button" aria-label="settings">⚙️</button>
 </header>
 
 
@@ -3757,8 +3768,7 @@ function hcScrollToOutput(){
     <div class="drawerBody" id="drawerBody">
       <div class="drawerTabs" role="tablist" aria-label="設定タブ">
         <button class="drawerTab active" type="button" role="tab" aria-selected="true" data-tab="acc">Xアカウント</button>
-        <button class="drawerTab" type="button" role="tab" aria-selected="false" data-tab="lic">ライセンス</button>
-      </div>
+</div>
 
       <section class="drawerTabPanel active" id="drawerTab_acc" role="tabpanel">        <div class="card">
           <h2 style="margin:0 0 8px; font-size:16px;">Xアカウント</h2>
@@ -3852,16 +3862,7 @@ function hcScrollToOutput(){
         </div>
 </section>
 
-      <section class="drawerTabPanel" id="drawerTab_lic" role="tabpanel">
-        <div class="panelCard">
-          <div class="panelTitle">ライセンス情報</div>
-          <div class="panelDesc">状態・期限の確認、再認証は「情報」からいつでもできます。</div>
-          <div class="panelActions">
-            <button type="button" class="btn primary" id="openInfoFromDrawer">情報を開く</button>
-            <button type="button" class="btn" id="reauthFromDrawer">ライセンス再認証</button>
-          </div>
-        </div>
-      </section>
+      <section class="drawerTabPanel" id="drawerTab_lic" role="tabpanel" style="display:none !important;"></section>
     </div>
   </div>
 </aside>
@@ -5098,6 +5099,37 @@ wrapper.appendChild(account);
     if(btn){ setTimeout(ensureXTabs, 30); }
   }, true);
 })();
+</script>
+
+
+<script id="hc-user-fix-x-tabs">
+document.addEventListener("DOMContentLoaded", function () {
+  function activateFirstXTab(){
+    var wrap = document.getElementById("hcXTabSystem");
+    if(!wrap) return;
+    var btns = wrap.querySelectorAll(".hc-x-tabbtn");
+    var panels = wrap.querySelectorAll(".hc-x-panel");
+    if(!btns.length || !panels.length) return;
+
+    // remove hidden/empty license panel from logic
+    panels.forEach(function(p){
+      if(p.id === "hcXTab_license"){ p.style.display = "none"; }
+    });
+
+    // if no active tab is visible, set first visible active
+    var activeBtn = Array.from(btns).find(function(b){
+      return b.classList.contains("active") && getComputedStyle(b).display !== "none";
+    });
+    if(!activeBtn){
+      btns.forEach(function(b){ b.classList.remove("active"); });
+      var first = Array.from(btns).find(function(b){ return getComputedStyle(b).display !== "none"; });
+      if(first) first.classList.add("active");
+    }
+  }
+
+  setTimeout(activateFirstXTab, 80);
+  setTimeout(activateFirstXTab, 400);
+});
 </script>
 
 </body>
