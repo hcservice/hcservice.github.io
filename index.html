@@ -1271,14 +1271,86 @@ function removeUndefinedFields(obj){
 </style>
 
 
-<style id="hc-user-fix-final">
-/* user requested: remove gear, remove X license tab, keep X tabs */
-#topGearBtn,
-#sectionX #hcXTabSystem .hc-x-tabbtn[data-xtab="license"],
-#sectionX #hcXTab_license,
+<style id="hc-x-tabs-rebuild-fix">
+#topGearBtn{display:none !important;}
+
+/* rebuild X tabs */
+#sectionX .hc-x-rebuilt{
+  display:grid;
+  gap:16px;
+  margin-top:12px;
+}
+#sectionX .hc-x-tabbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+#sectionX .hc-x-tabbtn{
+  padding:11px 16px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  font-weight:800;
+  letter-spacing:.02em;
+}
+#sectionX .hc-x-tabbtn.active{
+  background:linear-gradient(135deg, rgba(0,229,255,.22), rgba(180,0,255,.18));
+  border-color:rgba(0,229,255,.28);
+  box-shadow:0 0 24px rgba(0,229,255,.12);
+}
+#sectionX .hc-x-panel{display:none;}
+#sectionX .hc-x-panel.active{display:block;}
+
+/* account panel embedded in X */
+#sectionX #accountsDrawer{
+  position:static !important;
+  transform:none !important;
+  display:block !important;
+  width:100% !important;
+  height:auto !important;
+  max-width:none !important;
+  max-height:none !important;
+  box-shadow:none !important;
+  border:0 !important;
+  background:transparent !important;
+}
+#sectionX #accountsDrawer .drawerPanel{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  max-height:none !important;
+}
+#sectionX #accountsDrawer .drawerHeader,
+#sectionX #accountsDrawer .drawerTabs,
 #sectionX #drawerTab_lic,
-#sectionX .drawerTab[data-tab="lic"]{
+#sectionX .drawerTab[data-tab="lic"],
+#sectionX .hc-x-license-card{
   display:none !important;
+}
+#sectionX #accountsDrawer .drawerBody{
+  padding:0 !important;
+  overflow:visible !important;
+}
+
+/* remove any stray legacy X tab/license placeholders */
+#sectionX #hcXTab_license,
+#sectionX .hc-x-tabbtn[data-xtab="license"]{
+  display:none !important;
+}
+
+@media (max-width:720px){
+  #sectionX .hc-x-tabbar{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:2px;
+  }
+  #sectionX .hc-x-tabbtn{
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
 }
 </style>
 
@@ -3768,7 +3840,8 @@ function hcScrollToOutput(){
     <div class="drawerBody" id="drawerBody">
       <div class="drawerTabs" role="tablist" aria-label="設定タブ">
         <button class="drawerTab active" type="button" role="tab" aria-selected="true" data-tab="acc">Xアカウント</button>
-</div>
+        <button class="drawerTab" type="button" role="tab" aria-selected="false" data-tab="lic">ライセンス</button>
+      </div>
 
       <section class="drawerTabPanel active" id="drawerTab_acc" role="tabpanel">        <div class="card">
           <h2 style="margin:0 0 8px; font-size:16px;">Xアカウント</h2>
@@ -3862,7 +3935,16 @@ function hcScrollToOutput(){
         </div>
 </section>
 
-      <section class="drawerTabPanel" id="drawerTab_lic" role="tabpanel" style="display:none !important;"></section>
+      <section class="drawerTabPanel" id="drawerTab_lic" role="tabpanel">
+        <div class="panelCard">
+          <div class="panelTitle">ライセンス情報</div>
+          <div class="panelDesc">状態・期限の確認、再認証は「情報」からいつでもできます。</div>
+          <div class="panelActions">
+            <button type="button" class="btn primary" id="openInfoFromDrawer">情報を開く</button>
+            <button type="button" class="btn" id="reauthFromDrawer">ライセンス再認証</button>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </aside>
@@ -5102,34 +5184,104 @@ wrapper.appendChild(account);
 </script>
 
 
-<script id="hc-user-fix-x-tabs">
-document.addEventListener("DOMContentLoaded", function () {
-  function activateFirstXTab(){
-    var wrap = document.getElementById("hcXTabSystem");
-    if(!wrap) return;
-    var btns = wrap.querySelectorAll(".hc-x-tabbtn");
-    var panels = wrap.querySelectorAll(".hc-x-panel");
-    if(!btns.length || !panels.length) return;
-
-    // remove hidden/empty license panel from logic
-    panels.forEach(function(p){
-      if(p.id === "hcXTab_license"){ p.style.display = "none"; }
+<script id="hc-x-tabs-rebuild-script">
+(function(){
+  function activate(tabName){
+    var root = document.getElementById('hcXRebuilt');
+    if(!root) return;
+    root.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
     });
-
-    // if no active tab is visible, set first visible active
-    var activeBtn = Array.from(btns).find(function(b){
-      return b.classList.contains("active") && getComputedStyle(b).display !== "none";
+    root.querySelectorAll('.hc-x-panel').forEach(function(panel){
+      panel.classList.toggle('active', panel.id === 'hc-x-panel-' + tabName);
     });
-    if(!activeBtn){
-      btns.forEach(function(b){ b.classList.remove("active"); });
-      var first = Array.from(btns).find(function(b){ return getComputedStyle(b).display !== "none"; });
-      if(first) first.classList.add("active");
-    }
   }
 
-  setTimeout(activateFirstXTab, 80);
-  setTimeout(activateFirstXTab, 400);
-});
+  function build(){
+    var sectionX = document.getElementById('sectionX');
+    if(!sectionX) return;
+
+    var title = sectionX.querySelector('.page-title');
+    var pageMain = document.getElementById('pageMain');
+    var autoInput = document.getElementById('xAutoPostTitle');
+    var autoCard = autoInput ? autoInput.closest('.card') : null;
+    var drawer = document.getElementById('accountsDrawer');
+
+    if(!title || !pageMain || !autoCard || !drawer) return;
+
+    var root = document.getElementById('hcXRebuilt');
+    if(!root){
+      root = document.createElement('div');
+      root.id = 'hcXRebuilt';
+      root.className = 'hc-x-rebuilt';
+      root.innerHTML = [
+        '<div class="hc-x-tabbar" role="tablist" aria-label="Xタブ">',
+        '  <button class="hc-x-tabbtn active" type="button" data-tab="compose">投稿作成</button>',
+        '  <button class="hc-x-tabbtn" type="button" data-tab="autopost">自動ポスト</button>',
+        '  <button class="hc-x-tabbtn" type="button" data-tab="account">アカウント</button>',
+        '</div>',
+        '<div class="hc-x-panel active" id="hc-x-panel-compose"></div>',
+        '<div class="hc-x-panel" id="hc-x-panel-autopost"></div>',
+        '<div class="hc-x-panel" id="hc-x-panel-account"></div>'
+      ].join('');
+      if(title.nextSibling){
+        title.parentNode.insertBefore(root, title.nextSibling);
+      }else{
+        sectionX.appendChild(root);
+      }
+    }
+
+    var composePanel = document.getElementById('hc-x-panel-compose');
+    var autopostPanel = document.getElementById('hc-x-panel-autopost');
+    var accountPanel = document.getElementById('hc-x-panel-account');
+
+    if(pageMain.parentElement !== composePanel){
+      composePanel.appendChild(pageMain);
+    }
+    if(autoCard.parentElement !== autopostPanel){
+      autopostPanel.appendChild(autoCard);
+    }
+    if(drawer.parentElement !== accountPanel){
+      accountPanel.appendChild(drawer);
+    }
+
+    // show embedded account panel
+    drawer.classList.add('show','open');
+    drawer.setAttribute('aria-hidden','false');
+    drawer.style.display = 'block';
+
+    // remove legacy hidden license content if present
+    var licTab = drawer.querySelector('.drawerTab[data-tab="lic"]');
+    if(licTab) licTab.remove();
+    var licPanel = document.getElementById('drawerTab_lic');
+    if(licPanel) licPanel.remove();
+
+    root.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
+      if(btn.dataset.bound) return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', function(){
+        activate(btn.getAttribute('data-tab'));
+      });
+    });
+
+    activate('compose');
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    build();
+    setTimeout(build, 60);
+    setTimeout(build, 300);
+    setTimeout(build, 900);
+  });
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.app-navbtn[data-section="sectionX"]');
+    if(btn){
+      setTimeout(build, 50);
+      setTimeout(function(){ activate('compose'); }, 120);
+    }
+  }, true);
+})();
 </script>
 
 </body>
