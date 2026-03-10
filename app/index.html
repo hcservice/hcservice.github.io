@@ -1233,133 +1233,13 @@ function removeUndefinedFields(obj){
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-<style id="hc-v11-x-cleanup-fix">
-/* v11: keep X tabs visible, remove extra license/header clutter inside X account tab */
-#sectionX #hcXTabSystem .hc-x-tabbtn[data-xtab="license"],
-#sectionX #hcXTab_license{ display:none !important; }
-#sectionX #hcXTabSystem .drawerHeader,
-#sectionX #hcXTabSystem #drawerCloseBtn,
-#sectionX #hcXTabSystem .drawerTitle,
-#sectionX #hcXTabSystem .drawerTab[data-tab="lic"],
-#sectionX #hcXTabSystem #drawerTab_lic,
-#sectionX #hcXTabSystem .drawerTabs{ display:none !important; }
-#sectionX #hcXTab_account #accountsDrawer{
-  position: static !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  height: auto !important;
-  max-height: none !important;
-  transform: none !important;
-  display: block !important;
-  border-radius: 18px !important;
-  overflow: visible !important;
-  box-shadow: none !important;
-  border: 0 !important;
-  background: transparent !important;
-}
-#sectionX #hcXTab_account #accountsDrawer .drawerPanel{
-  background: transparent !important;
-  max-height: none !important;
-  box-shadow: none !important;
-  border: 0 !important;
-}
-#sectionX #hcXTab_account #accountsDrawer .drawerBody{
-  padding: 0 !important;
-  overflow: visible !important;
-}
-</style>
-
-
-<style id="hc-x-tabs-rebuild-fix">
-#topGearBtn{display:none !important;}
-
-/* rebuild X tabs */
-#sectionX .hc-x-rebuilt{
-  display:grid;
-  gap:16px;
-  margin-top:12px;
-}
-#sectionX .hc-x-tabbar{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-#sectionX .hc-x-tabbtn{
-  padding:11px 16px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.08);
-  color:rgba(255,255,255,.92);
-  font-weight:800;
-  letter-spacing:.02em;
-}
-#sectionX .hc-x-tabbtn.active{
-  background:linear-gradient(135deg, rgba(0,229,255,.22), rgba(180,0,255,.18));
-  border-color:rgba(0,229,255,.28);
-  box-shadow:0 0 24px rgba(0,229,255,.12);
-}
-#sectionX .hc-x-panel{display:none;}
-#sectionX .hc-x-panel.active{display:block;}
-
-/* account panel embedded in X */
-#sectionX #accountsDrawer{
-  position:static !important;
-  transform:none !important;
-  display:block !important;
-  width:100% !important;
-  height:auto !important;
-  max-width:none !important;
-  max-height:none !important;
-  box-shadow:none !important;
-  border:0 !important;
-  background:transparent !important;
-}
-#sectionX #accountsDrawer .drawerPanel{
-  background:transparent !important;
-  border:0 !important;
-  box-shadow:none !important;
-  max-height:none !important;
-}
-#sectionX #accountsDrawer .drawerHeader,
-#sectionX #accountsDrawer .drawerTabs,
-#sectionX #drawerTab_lic,
-#sectionX .drawerTab[data-tab="lic"],
-#sectionX .hc-x-license-card{
-  display:none !important;
-}
-#sectionX #accountsDrawer .drawerBody{
-  padding:0 !important;
-  overflow:visible !important;
-}
-
-/* remove any stray legacy X tab/license placeholders */
-#sectionX #hcXTab_license,
-#sectionX .hc-x-tabbtn[data-xtab="license"]{
-  display:none !important;
-}
-
-@media (max-width:720px){
-  #sectionX .hc-x-tabbar{
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    padding-bottom:2px;
-  }
-  #sectionX .hc-x-tabbtn{
-    flex:0 0 auto;
-    white-space:nowrap;
-  }
-}
-</style>
-
 </head>
 
 <body>
 
 <header class="hc-header">
   <div class="hc-title"><img class="hc-logo" src="icon-180.png" alt="Hyper Core" />SNS Hyper Core</div>
+  <button id="topGearBtn" type="button" aria-label="settings">⚙️</button>
 </header>
 
 
@@ -5136,151 +5016,321 @@ wrapper.appendChild(account);
 </script>
 
 
-<script id="hc-v11-force-x-tabs">
+<script id="hc-threads-worker-bridge">
 (function(){
-  function setXTab(name){
-    var root = document.getElementById('hcXTabSystem');
-    if(!root) return;
-    if(name === 'license') name = 'account';
-    root.querySelectorAll('.hc-x-tabbtn').forEach(function(b){
-      var on = b.getAttribute('data-xtab') === name;
-      b.classList.toggle('active', on);
-    });
-    root.querySelectorAll('.hc-x-panel').forEach(function(p){
-      p.classList.toggle('active', p.id === 'hcXTab_' + name);
-    });
+  const API_BASE = 'https://hypercore-threads-api.ssssqqqq255.workers.dev';
+  const ACCOUNT_ID = 'test';
+  let workerDmCandidates = [];
+  let workerPosts = [];
+  let workerRules = [];
+  let workerLogs = [];
+
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const jp = (iso) => { try { return new Date(iso).toLocaleString('ja-JP'); } catch(e){ return String(iso||''); } };
+  const q = (id) => document.getElementById(id);
+
+  function hcToast(msg, ok){
+    let t = document.getElementById('hcWorkerToast');
+    if(!t){
+      t = document.createElement('div');
+      t.id = 'hcWorkerToast';
+      t.style.cssText = 'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(12,14,20,.92);color:#fff;font-weight:900;font-size:13px;z-index:40000;opacity:0;transition:opacity .15s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.background = ok ? 'rgba(32,180,120,.24)' : 'rgba(220,80,80,.24)';
+    t.style.opacity = '1';
+    clearTimeout(t._tm);
+    t._tm = setTimeout(()=> t.style.opacity = '0', 1700);
   }
-  function ensureXTabs(){
-    try{
-      if(typeof buildXTabs === 'function') buildXTabs();
-      var root = document.getElementById('hcXTabSystem');
-      if(!root) return;
-      var licBtn = root.querySelector('.hc-x-tabbtn[data-xtab="license"]');
-      if(licBtn) licBtn.style.display = 'none';
-      var licPanel = document.getElementById('hcXTab_license');
-      if(licPanel) licPanel.style.display = 'none';
-      var accountPanel = document.getElementById('hcXTab_account');
-      var drawer = document.getElementById('accountsDrawer');
-      if(accountPanel && drawer && drawer.parentElement !== accountPanel){
-        accountPanel.appendChild(drawer);
-      }
-      setXTab('compose');
-      root.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
-        btn.onclick = function(){ setXTab(btn.getAttribute('data-xtab')); };
+
+  async function api(path, options){
+    const res = await fetch(API_BASE + path, options || {});
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok || data.ok === false){
+      throw new Error(data.error || data.message || ('HTTP ' + res.status));
+    }
+    return data;
+  }
+
+  async function getPosts(){
+    const data = await api('/api/threads/posts?accountId=' + encodeURIComponent(ACCOUNT_ID));
+    workerPosts = Array.isArray(data.posts) ? data.posts : [];
+    return workerPosts;
+  }
+
+  async function getRules(){
+    const data = await api('/api/threads/rules?accountId=' + encodeURIComponent(ACCOUNT_ID));
+    workerRules = Array.isArray(data.rules) ? data.rules : [];
+    return workerRules;
+  }
+
+  async function getDmCandidates(){
+    const data = await api('/api/threads/dm-candidates?accountId=' + encodeURIComponent(ACCOUNT_ID));
+    workerDmCandidates = Array.isArray(data.dmCandidates) ? data.dmCandidates : [];
+    return workerDmCandidates;
+  }
+
+  async function getLogs(){
+    const data = await api('/api/threads/logs?accountId=' + encodeURIComponent(ACCOUNT_ID));
+    workerLogs = Array.isArray(data.logs) ? data.logs : [];
+    return workerLogs;
+  }
+
+  function renderPosts(){
+    const el = q('threadsPostsList');
+    if(!el) return;
+    if(!workerPosts.length){
+      el.innerHTML = '<div class="muted">Workerに保存された投稿はありません。</div>';
+      return;
+    }
+    el.innerHTML = workerPosts.map(x => `
+      <div class="item">
+        <div><b>${esc(x.post_url || x.postUrl || x.post_id || x.postId || '投稿')}</b></div>
+        <div class="threads-mini">${esc(x.post_id || x.postId || '')}</div>
+        <pre>${esc(x.caption || x.note || '')}</pre>
+      </div>`).join('');
+  }
+
+  function renderRules(){
+    const el = q('threadsRulesList');
+    if(!el) return;
+    if(!workerRules.length){
+      el.innerHTML = '<div class="muted">Workerに保存されたルールはありません。</div>';
+      return;
+    }
+    el.innerHTML = workerRules.map(x => `
+      <div class="item">
+        <div><b>${esc(x.rule_name || x.ruleName || '無名ルール')}</b> <span class="threads-mini">(${esc(x.action_type || x.actionType || '')})</span></div>
+        <div class="threads-mini">${esc((x.keywords || '').toString())}</div>
+        <pre>${esc(x.reply_text || x.replyText || '')}</pre>
+      </div>`).join('');
+  }
+
+  function renderDmCandidates(){
+    const el = q('threadsLeadsList');
+    if(!el) return;
+    const filter = q('threadsLeadFilter')?.value || 'all';
+    let list = workerDmCandidates.slice();
+    if(filter !== 'all') list = list.filter(x => (x.status || 'new') === filter || (filter === 'DM候補作成済み' && (x.status || 'new') === 'new'));
+    if(!list.length){
+      el.innerHTML = '<div class="muted">DM候補はありません。</div>';
+      return;
+    }
+    el.innerHTML = list.map(x => `
+      <div class="item">
+        <div><b>${esc(x.username || x.user_id || 'user')}</b> <span class="threads-mini">${esc(x.status || 'new')}</span></div>
+        <div class="threads-mini">${esc(jp(x.created_at || x.createdAt))}</div>
+        <pre>${esc(x.candidate_text || '')}</pre>
+        <div class="threads-actions">
+          <button type="button" class="secondary hc-copy-dm" data-copy="${esc((x.candidate_text || '').replace(/"/g,'&quot;'))}">DM候補コピー</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderLogs(){
+    const html = workerLogs.slice(0,8).map(x => `
+      <div class="threads-log-item">
+        <div class="threads-log-time">${esc(jp(x.created_at || x.createdAt))}</div>
+        <div><span class="threads-badge">${esc(x.type || 'Threads')}</span></div>
+        <div style="margin-top:8px;">${esc(x.message || '')}</div>
+      </div>`).join('') || '<div class="muted">まだログはありません。</div>';
+    const a = q('threadsActivitySummary');
+    const b = q('dashboardActivityLog');
+    if(a) a.innerHTML = html;
+    if(b) b.innerHTML = html;
+  }
+
+  function renderDashboard(){
+    const summary = q('dashboardThreadsSummary');
+    const stats = q('dashboardThreadsStats');
+    if(summary){
+      const latest = workerLogs[0];
+      summary.innerHTML = `監視投稿 <b>${workerPosts.length}</b>件 / ルール <b>${workerRules.length}</b>件 / DM候補 <b>${workerDmCandidates.length}</b>件${latest ? `<br>最新ログ: <b>${esc(latest.message || '')}</b>` : ''}`;
+    }
+    if(stats){
+      stats.innerHTML = `
+        <div class="threads-stat"><div class="threads-mini">監視投稿</div><div class="n">${workerPosts.length}</div></div>
+        <div class="threads-stat"><div class="threads-mini">ルール</div><div class="n">${workerRules.length}</div></div>
+        <div class="threads-stat"><div class="threads-mini">DM候補</div><div class="n">${workerDmCandidates.length}</div></div>
+        <div class="threads-stat"><div class="threads-mini">ログ件数</div><div class="n">${workerLogs.length}</div></div>`;
+    }
+    const s = q('threadsSummary');
+    if(s){
+      s.innerHTML = `投稿設定: <b>${workerPosts.length}</b>件<br>条件返信ルール: <b>${workerRules.length}</b>件<br>DM候補: <b>${workerDmCandidates.length}</b>件<br>接続先: <b>${esc(API_BASE)}</b>`;
+    }
+  }
+
+  async function refreshAll(){
+    await Promise.allSettled([getPosts(), getRules(), getDmCandidates(), getLogs()]);
+    renderPosts();
+    renderRules();
+    renderDmCandidates();
+    renderLogs();
+    renderDashboard();
+  }
+
+  function swapButton(id, handler){
+    const old = q(id);
+    if(!old) return null;
+    const clone = old.cloneNode(true);
+    old.parentNode.replaceChild(clone, old);
+    clone.addEventListener('click', handler);
+    return clone;
+  }
+
+  function injectExtraButtons(){
+    const postsWrap = q('threadsSavePostBtn')?.parentElement;
+    if(postsWrap && !q('threadsRefreshPostsBtn')){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'threadsRefreshPostsBtn';
+      btn.className = 'secondary';
+      btn.textContent = 'Worker同期';
+      btn.addEventListener('click', async ()=>{ await refreshAll(); hcToast('Workerから同期しました', true); });
+      postsWrap.appendChild(btn);
+    }
+    const automationWrap = q('threadsRunSimulationBtn')?.parentElement;
+    if(automationWrap && !q('threadsRunWorkerBtn')){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'threadsRunWorkerBtn';
+      btn.textContent = 'Worker巡回実行';
+      btn.addEventListener('click', async ()=>{
+        try{
+          const data = await api('/api/threads/run-check', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({accountId: ACCOUNT_ID})});
+          const pre = q('threadsAutomationPreview');
+          const info = data.summary || {};
+          if(pre) pre.textContent = `巡回完了
+checkedPosts: ${info.checkedPosts ?? 0}
+fetchedComments: ${info.fetchedComments ?? 0}
+matched: ${info.matched ?? 0}
+dmCreated: ${info.dmCreated ?? 0}
+skipped: ${info.skipped ?? 0}`;
+          const rs = q('threadsSimulationResult');
+          if(rs) rs.textContent = 'Worker巡回を実行しました';
+          await refreshAll();
+          hcToast('Worker巡回を実行しました', true);
+        }catch(e){ hcToast('巡回失敗: ' + e.message, false); }
       });
-    }catch(e){ console.error(e); }
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    ensureXTabs();
-    setTimeout(ensureXTabs, 50);
-    setTimeout(ensureXTabs, 300);
-    setTimeout(ensureXTabs, 800);
-  });
-  document.addEventListener('click', function(e){
-    var btn = e.target.closest && e.target.closest('.app-navbtn[data-section="sectionX"]');
-    if(btn){ setTimeout(ensureXTabs, 30); }
-  }, true);
-})();
-</script>
-
-
-<script id="hc-x-tabs-rebuild-script">
-(function(){
-  function activate(tabName){
-    var root = document.getElementById('hcXRebuilt');
-    if(!root) return;
-    root.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
-      btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
-    });
-    root.querySelectorAll('.hc-x-panel').forEach(function(panel){
-      panel.classList.toggle('active', panel.id === 'hc-x-panel-' + tabName);
-    });
+      automationWrap.appendChild(btn);
+    }
+    const monitorWrap = q('threadsSaveMonitorBtn')?.parentElement;
+    if(monitorWrap && !q('threadsReloadLogsBtn')){
+      const btn = document.createElement('button');
+      btn.type='button';
+      btn.id='threadsReloadLogsBtn';
+      btn.className='secondary';
+      btn.textContent='ログ更新';
+      btn.addEventListener('click', async ()=>{ await getLogs(); renderLogs(); renderDashboard(); hcToast('ログ更新しました', true); });
+      monitorWrap.appendChild(btn);
+    }
   }
 
-  function build(){
-    var sectionX = document.getElementById('sectionX');
-    if(!sectionX) return;
-
-    var title = sectionX.querySelector('.page-title');
-    var pageMain = document.getElementById('pageMain');
-    var autoInput = document.getElementById('xAutoPostTitle');
-    var autoCard = autoInput ? autoInput.closest('.card') : null;
-    var drawer = document.getElementById('accountsDrawer');
-
-    if(!title || !pageMain || !autoCard || !drawer) return;
-
-    var root = document.getElementById('hcXRebuilt');
-    if(!root){
-      root = document.createElement('div');
-      root.id = 'hcXRebuilt';
-      root.className = 'hc-x-rebuilt';
-      root.innerHTML = [
-        '<div class="hc-x-tabbar" role="tablist" aria-label="Xタブ">',
-        '  <button class="hc-x-tabbtn active" type="button" data-tab="compose">投稿作成</button>',
-        '  <button class="hc-x-tabbtn" type="button" data-tab="autopost">自動ポスト</button>',
-        '  <button class="hc-x-tabbtn" type="button" data-tab="account">アカウント</button>',
-        '</div>',
-        '<div class="hc-x-panel active" id="hc-x-panel-compose"></div>',
-        '<div class="hc-x-panel" id="hc-x-panel-autopost"></div>',
-        '<div class="hc-x-panel" id="hc-x-panel-account"></div>'
-      ].join('');
-      if(title.nextSibling){
-        title.parentNode.insertBefore(root, title.nextSibling);
-      }else{
-        sectionX.appendChild(root);
-      }
-    }
-
-    var composePanel = document.getElementById('hc-x-panel-compose');
-    var autopostPanel = document.getElementById('hc-x-panel-autopost');
-    var accountPanel = document.getElementById('hc-x-panel-account');
-
-    if(pageMain.parentElement !== composePanel){
-      composePanel.appendChild(pageMain);
-    }
-    if(autoCard.parentElement !== autopostPanel){
-      autopostPanel.appendChild(autoCard);
-    }
-    if(drawer.parentElement !== accountPanel){
-      accountPanel.appendChild(drawer);
-    }
-
-    // show embedded account panel
-    drawer.classList.add('show','open');
-    drawer.setAttribute('aria-hidden','false');
-    drawer.style.display = 'block';
-
-    // remove legacy hidden license content if present
-    var licTab = drawer.querySelector('.drawerTab[data-tab="lic"]');
-    if(licTab) licTab.remove();
-    var licPanel = document.getElementById('drawerTab_lic');
-    if(licPanel) licPanel.remove();
-
-    root.querySelectorAll('.hc-x-tabbtn').forEach(function(btn){
-      if(btn.dataset.bound) return;
-      btn.dataset.bound = '1';
-      btn.addEventListener('click', function(){
-        activate(btn.getAttribute('data-tab'));
-      });
+  function wireEvents(){
+    swapButton('threadsSavePostBtn', async function(){
+      try{
+        const postUrl = (q('threadsPostTarget')?.value || '').trim();
+        if(!postUrl) return hcToast('投稿URLか投稿IDを入れてください', false);
+        await api('/api/threads/posts', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({accountId: ACCOUNT_ID, postUrl})});
+        await refreshAll();
+        hcToast('投稿をWorkerへ保存しました', true);
+      }catch(e){ hcToast('投稿保存失敗: ' + e.message, false); }
     });
 
-    activate('compose');
+    swapButton('threadsSaveRuleBtn', async function(){
+      try{
+        const ruleName = (q('threadsRuleName')?.value || '').trim();
+        const keywords = (q('threadsRuleKeywords')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
+        const replyText = (q('threadsRuleReply')?.value || '').trim();
+        const action = q('threadsRuleAction')?.value || 'reply_and_dm_candidate';
+        if(!ruleName || !keywords.length) return hcToast('ルール名とキーワードを入れてください', false);
+        let actionType = 'dm_candidate';
+        if(action === 'reply_only') actionType = 'public_reply';
+        if(action === 'full') actionType = 'both';
+        await api('/api/threads/rules', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({accountId: ACCOUNT_ID, ruleName, keywords, excludeKeywords: [], replyText, actionType, matchType: 'partial', priority: 10})});
+        await refreshAll();
+        hcToast('ルールをWorkerへ保存しました', true);
+      }catch(e){ hcToast('ルール保存失敗: ' + e.message, false); }
+    });
+
+    swapButton('threadsRunSimulationBtn', async function(){
+      try{
+        const data = await api('/api/threads/run-check', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({accountId: ACCOUNT_ID})});
+        const info = data.summary || {};
+        const pre = q('threadsAutomationPreview');
+        if(pre) pre.textContent = `巡回完了
+checkedPosts: ${info.checkedPosts ?? 0}
+fetchedComments: ${info.fetchedComments ?? 0}
+matched: ${info.matched ?? 0}
+dmCreated: ${info.dmCreated ?? 0}
+skipped: ${info.skipped ?? 0}`;
+        const rs = q('threadsSimulationResult');
+        if(rs) rs.textContent = 'Worker巡回を実行しました';
+        await refreshAll();
+        hcToast('巡回成功', true);
+      }catch(e){ hcToast('巡回失敗: ' + e.message, false); }
+    });
+
+    swapButton('threadsGenerateDmOnlyBtn', async function(){
+      await getDmCandidates();
+      renderDmCandidates();
+      renderDashboard();
+      hcToast('DM候補を再取得しました', true);
+    });
+
+    swapButton('threadsExportJsonBtn', function(){
+      const blob = new Blob([JSON.stringify(workerDmCandidates, null, 2)], {type: 'application/json;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'threads_dm_candidates.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      hcToast('JSONを書き出しました', true);
+    });
+
+    swapButton('threadsExportCsvBtn', function(){
+      const header = ['username','candidate_text','status','created_at'];
+      const rows = workerDmCandidates.map(x => header.map(k => '"' + String(x[k] ?? '').replace(/"/g,'""') + '"').join(','));
+      const csv = [header.join(',')].concat(rows).join('
+');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'threads_dm_candidates.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      hcToast('CSVを書き出しました', true);
+    });
+
+    q('threadsLeadFilter')?.addEventListener('change', renderDmCandidates);
+    document.addEventListener('click', async function(e){
+      const btn = e.target.closest('.hc-copy-dm');
+      if(!btn) return;
+      const txt = btn.getAttribute('data-copy') || '';
+      try{ await navigator.clipboard.writeText(txt); hcToast('DM候補をコピーしました', true); }catch(err){ hcToast('コピー失敗', false); }
+    });
   }
 
-  document.addEventListener('DOMContentLoaded', function(){
-    build();
-    setTimeout(build, 60);
-    setTimeout(build, 300);
-    setTimeout(build, 900);
-  });
+  function setDmPreview(){
+    const box = q('threadsDmPreview');
+    if(!box) return;
+    box.textContent = 'Worker連携中
+接続先: ' + API_BASE + '
+アカウント: ' + ACCOUNT_ID + '
 
-  document.addEventListener('click', function(e){
-    var btn = e.target.closest && e.target.closest('.app-navbtn[data-section="sectionX"]');
-    if(btn){
-      setTimeout(build, 50);
-      setTimeout(function(){ activate('compose'); }, 120);
-    }
-  }, true);
+DM候補は「リード一覧」に表示されます。';
+  }
+
+  async function boot(){
+    injectExtraButtons();
+    wireEvents();
+    setDmPreview();
+    await refreshAll();
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();
 </script>
 
