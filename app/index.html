@@ -5016,317 +5016,440 @@ wrapper.appendChild(account);
 </script>
 
 
-<script id="hc-threads-worker-bridge">
+
+<!-- THREADS_WORKER_BRIDGE_V2 -->
+<style>
+#threadsWorkerBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+#threadsWorkerBar .threads-mini{margin-left:auto}
+.worker-inline-card{margin-top:12px}
+.worker-inline-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:900px){.worker-inline-grid{grid-template-columns:1fr}}
+.worker-kv{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.worker-kv .threads-badge{cursor:pointer}
+</style>
+<script>
 (function(){
-  const API_BASE = 'https://hypercore-threads-api.ssssqqqq255.workers.dev';
-  const ACCOUNT_ID = 'test';
-  let workerDmCandidates = [];
-  let workerPosts = [];
-  let workerRules = [];
-  let workerLogs = [];
+  const MARKER = 'THREADS_WORKER_BRIDGE_V2';
+  if (window[MARKER]) return; window[MARKER] = true;
 
-  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const jp = (iso) => { try { return new Date(iso).toLocaleString('ja-JP'); } catch(e){ return String(iso||''); } };
-  const q = (id) => document.getElementById(id);
+  const LS = {
+    apiBase: 'hc_threads_worker_api_base_v1',
+    accountId: 'hc_threads_worker_account_id_v1',
+    lastRun: 'hc_threads_worker_last_run_v1'
+  };
+  const DEFAULT_API = 'https://hypercore-threads-api.ssssqqqq255.workers.dev';
+  const DEFAULT_ACCOUNT = 'test';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  function hcToast(msg, ok){
-    let t = document.getElementById('hcWorkerToast');
+  function readLS(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : v; } catch(e){ return d; } }
+  function writeLS(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+  function getApiBase(){ return (readLS(LS.apiBase, DEFAULT_API) || DEFAULT_API).replace(/\/$/, ''); }
+  function getAccountId(){ return readLS(LS.accountId, DEFAULT_ACCOUNT) || DEFAULT_ACCOUNT; }
+  function setApiBase(v){ writeLS(LS.apiBase, (v || DEFAULT_API).trim()); }
+  function setAccountId(v){ writeLS(LS.accountId, (v || DEFAULT_ACCOUNT).trim()); }
+
+  function toast(msg){
+    const fn = window.hcToast || window.hcShowToast;
+    if (typeof fn === 'function') { try { fn(msg, true); return; } catch(e){} }
+    let t = $('threadsWorkerToast');
     if(!t){
       t = document.createElement('div');
-      t.id = 'hcWorkerToast';
-      t.style.cssText = 'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(12,14,20,.92);color:#fff;font-weight:900;font-size:13px;z-index:40000;opacity:0;transition:opacity .15s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)';
+      t.id = 'threadsWorkerToast';
+      t.style.cssText = 'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);padding:10px 14px;border-radius:999px;background:rgba(10,14,20,.94);color:#fff;z-index:99999;border:1px solid rgba(255,255,255,.16);box-shadow:0 12px 32px rgba(0,0,0,.35);opacity:0;transition:opacity .18s ease';
       document.body.appendChild(t);
     }
     t.textContent = msg;
-    t.style.background = ok ? 'rgba(32,180,120,.24)' : 'rgba(220,80,80,.24)';
     t.style.opacity = '1';
     clearTimeout(t._tm);
-    t._tm = setTimeout(()=> t.style.opacity = '0', 1700);
+    t._tm = setTimeout(()=>t.style.opacity='0', 1600);
   }
 
-  async function api(path, options){
-    const res = await fetch(API_BASE + path, options || {});
-    const data = await res.json().catch(() => ({}));
-    if(!res.ok || data.ok === false){
-      throw new Error(data.error || data.message || ('HTTP ' + res.status));
-    }
+  async function copyText(s){
+    try { await navigator.clipboard.writeText(String(s||'')); return true; } catch(e){}
+    try { const ta = document.createElement('textarea'); ta.value = String(s||''); document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); return true; } catch(e){ return false; }
+  }
+
+  async function apiGet(path){
+    const res = await fetch(getApiBase() + path, { headers: { 'Accept':'application/json' }});
+    const data = await res.json().catch(()=>({ ok:false, error:'invalid_json' }));
+    if(!res.ok || data.ok === false) throw new Error(data.error || data.message || ('HTTP ' + res.status));
     return data;
   }
 
-  async function getPosts(){
-    const data = await api('/api/threads/posts?accountId=' + encodeURIComponent(ACCOUNT_ID));
-    workerPosts = Array.isArray(data.posts) ? data.posts : [];
-    return workerPosts;
+  async function apiPost(path, body){
+    const res = await fetch(getApiBase() + path, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+      body: JSON.stringify(body || {})
+    });
+    const data = await res.json().catch(()=>({ ok:false, error:'invalid_json' }));
+    if(!res.ok || data.ok === false) throw new Error(data.error || data.message || ('HTTP ' + res.status));
+    return data;
   }
 
-  async function getRules(){
-    const data = await api('/api/threads/rules?accountId=' + encodeURIComponent(ACCOUNT_ID));
-    workerRules = Array.isArray(data.rules) ? data.rules : [];
-    return workerRules;
+  function ensureWorkerBar(){
+    const threadsSection = $('sectionThreads');
+    const tabs = $('threadsTabs');
+    if(!threadsSection || !tabs || $('threadsWorkerBar')) return;
+    const wrap = document.createElement('div');
+    wrap.id = 'threadsWorkerBar';
+    wrap.className = 'card';
+    wrap.innerHTML = `
+      <button type="button" class="tabbtn" id="threadsWorkerSyncBtn">Worker同期</button>
+      <button type="button" class="tabbtn" id="threadsWorkerRunBtn">巡回実行</button>
+      <button type="button" class="tabbtn" id="threadsWorkerLogsBtn">ログ更新</button>
+      <button type="button" class="tabbtn" id="threadsWorkerDmBtn">DM候補更新</button>
+      <span class="threads-mini" id="threadsWorkerStatus">Worker未同期</span>
+    `;
+    tabs.insertAdjacentElement('afterend', wrap);
+
+    $('threadsWorkerSyncBtn')?.addEventListener('click', syncAllFromWorker);
+    $('threadsWorkerRunBtn')?.addEventListener('click', runCheckFromWorker);
+    $('threadsWorkerLogsBtn')?.addEventListener('click', loadLogsFromWorker);
+    $('threadsWorkerDmBtn')?.addEventListener('click', loadDmCandidatesFromWorker);
   }
 
-  async function getDmCandidates(){
-    const data = await api('/api/threads/dm-candidates?accountId=' + encodeURIComponent(ACCOUNT_ID));
-    workerDmCandidates = Array.isArray(data.dmCandidates) ? data.dmCandidates : [];
-    return workerDmCandidates;
+  function ensureWorkerSettingsCard(){
+    const settingsTab = $('threadsTab_settings');
+    if(!settingsTab || $('threadsWorkerSettingsCard')) return;
+    const card = document.createElement('div');
+    card.className = 'card worker-inline-card';
+    card.id = 'threadsWorkerSettingsCard';
+    card.innerHTML = `
+      <div style="font-weight:800; margin-bottom:8px;">Threads Worker連携</div>
+      <div class="worker-inline-grid">
+        <div>
+          <label>Worker API Base</label>
+          <input id="threadsWorkerApiBase" placeholder="https://hypercore-threads-api....workers.dev" />
+        </div>
+        <div>
+          <label>accountId</label>
+          <input id="threadsWorkerAccountId" placeholder="test" />
+        </div>
+      </div>
+      <div class="btns">
+        <button type="button" id="threadsWorkerSaveSettingsBtn">Worker設定保存</button>
+        <button type="button" class="secondary" id="threadsWorkerTestBtn">接続テスト</button>
+        <button type="button" class="secondary" id="threadsWorkerCopyBaseBtn">URLコピー</button>
+      </div>
+      <div class="feature-note" id="threadsWorkerSettingsStatus">Worker連携設定を保存すると、投稿・ルール・DM候補・ログがサーバー基準になります。</div>
+    `;
+    settingsTab.appendChild(card);
+    $('threadsWorkerApiBase').value = getApiBase();
+    $('threadsWorkerAccountId').value = getAccountId();
+    $('threadsWorkerSaveSettingsBtn')?.addEventListener('click', ()=>{
+      setApiBase($('threadsWorkerApiBase').value);
+      setAccountId($('threadsWorkerAccountId').value);
+      $('threadsWorkerSettingsStatus').textContent = '保存しました。';
+      updateWorkerStatus('設定保存済み');
+      toast('Worker設定を保存しました');
+    });
+    $('threadsWorkerTestBtn')?.addEventListener('click', testWorkerConnection);
+    $('threadsWorkerCopyBaseBtn')?.addEventListener('click', async ()=>{
+      await copyText(getApiBase());
+      toast('Worker URLをコピーしました');
+    });
   }
 
-  async function getLogs(){
-    const data = await api('/api/threads/logs?accountId=' + encodeURIComponent(ACCOUNT_ID));
-    workerLogs = Array.isArray(data.logs) ? data.logs : [];
-    return workerLogs;
+  function ensureAutomationButtons(){
+    const panel = $('threadsTab_automation');
+    if(!panel || $('threadsWorkerRunInlineBtn')) return;
+    const target = $('threadsSimulationResult');
+    const box = document.createElement('div');
+    box.className = 'worker-kv';
+    box.innerHTML = `
+      <button type="button" class="secondary" id="threadsWorkerRunInlineBtn">Workerで巡回実行</button>
+      <span class="threads-badge" id="threadsWorkerLastRunBadge">未実行</span>
+      <span class="threads-badge" id="threadsWorkerMatchedBadge">一致 0</span>
+      <span class="threads-badge" id="threadsWorkerDmCreatedBadge">DM 0</span>
+    `;
+    target?.insertAdjacentElement('afterend', box);
+    $('threadsWorkerRunInlineBtn')?.addEventListener('click', runCheckFromWorker);
+    renderLastRunSummary();
   }
 
-  function renderPosts(){
-    const el = q('threadsPostsList');
-    if(!el) return;
-    if(!workerPosts.length){
-      el.innerHTML = '<div class="muted">Workerに保存された投稿はありません。</div>';
+  function updateWorkerStatus(text){
+    const el = $('threadsWorkerStatus');
+    if(el) el.textContent = text;
+  }
+
+  function saveLastRun(summary){
+    try { localStorage.setItem(LS.lastRun, JSON.stringify({ ...summary, at:new Date().toISOString() })); } catch(e){}
+    renderLastRunSummary();
+  }
+
+  function renderLastRunSummary(){
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(LS.lastRun) || 'null'); } catch(e){}
+    const b1 = $('threadsWorkerLastRunBadge');
+    const b2 = $('threadsWorkerMatchedBadge');
+    const b3 = $('threadsWorkerDmCreatedBadge');
+    if(!s){
+      if(b1) b1.textContent = '未実行';
+      if(b2) b2.textContent = '一致 0';
+      if(b3) b3.textContent = 'DM 0';
       return;
     }
-    el.innerHTML = workerPosts.map(x => `
+    if(b1) b1.textContent = '最終 ' + new Date(s.at).toLocaleString('ja-JP');
+    if(b2) b2.textContent = '一致 ' + Number(s.matched || 0);
+    if(b3) b3.textContent = 'DM ' + Number(s.dmCreated || 0);
+  }
+
+  async function testWorkerConnection(){
+    try {
+      setApiBase($('threadsWorkerApiBase')?.value || getApiBase());
+      setAccountId($('threadsWorkerAccountId')?.value || getAccountId());
+      const data = await apiGet('/api/threads/posts?accountId=' + encodeURIComponent(getAccountId()));
+      $('threadsWorkerSettingsStatus').textContent = `接続OK / posts ${ (data.posts || []).length }件`;
+      updateWorkerStatus('接続OK');
+      toast('Worker接続OK');
+    } catch(e){
+      $('threadsWorkerSettingsStatus').textContent = '接続失敗: ' + e.message;
+      updateWorkerStatus('接続失敗');
+      toast('接続失敗: ' + e.message);
+    }
+  }
+
+  async function loadPostsFromWorker(){
+    const data = await apiGet('/api/threads/posts?accountId=' + encodeURIComponent(getAccountId()));
+    const el = $('threadsPostsList');
+    const items = data.posts || [];
+    if(!el) return items;
+    if(!items.length){ el.innerHTML = '<div class="muted">Worker上の投稿はありません。</div>'; return items; }
+    el.innerHTML = items.map(x => `
       <div class="item">
-        <div><b>${esc(x.post_url || x.postUrl || x.post_id || x.postId || '投稿')}</b></div>
+        <div><b>${esc(x.post_url || x.postUrl || x.post_id || x.postId || '無題')}</b></div>
         <div class="threads-mini">${esc(x.post_id || x.postId || '')}</div>
         <pre>${esc(x.caption || x.note || '')}</pre>
       </div>`).join('');
+    return items;
   }
 
-  function renderRules(){
-    const el = q('threadsRulesList');
-    if(!el) return;
-    if(!workerRules.length){
-      el.innerHTML = '<div class="muted">Workerに保存されたルールはありません。</div>';
-      return;
-    }
-    el.innerHTML = workerRules.map(x => `
+  async function loadRulesFromWorker(){
+    const data = await apiGet('/api/threads/rules?accountId=' + encodeURIComponent(getAccountId()));
+    const el = $('threadsRulesList');
+    const items = data.rules || [];
+    if(!el) return items;
+    if(!items.length){ el.innerHTML = '<div class="muted">Worker上のルールはありません。</div>'; return items; }
+    el.innerHTML = items.map(x => {
+      let keys = x.keywords;
+      try { if (typeof keys === 'string') keys = JSON.parse(keys); } catch(e){}
+      return `
       <div class="item">
-        <div><b>${esc(x.rule_name || x.ruleName || '無名ルール')}</b> <span class="threads-mini">(${esc(x.action_type || x.actionType || '')})</span></div>
-        <div class="threads-mini">${esc((x.keywords || '').toString())}</div>
+        <div><b>${esc(x.rule_name || x.ruleName || '無名ルール')}</b> <span class="threads-mini">${esc(x.action_type || x.actionType || '')}</span></div>
+        <div class="threads-mini">${esc(Array.isArray(keys) ? keys.join(', ') : (keys || ''))}</div>
         <pre>${esc(x.reply_text || x.replyText || '')}</pre>
-      </div>`).join('');
+      </div>`;
+    }).join('');
+    return items;
   }
 
-  function renderDmCandidates(){
-    const el = q('threadsLeadsList');
-    if(!el) return;
-    const filter = q('threadsLeadFilter')?.value || 'all';
-    let list = workerDmCandidates.slice();
-    if(filter !== 'all') list = list.filter(x => (x.status || 'new') === filter || (filter === 'DM候補作成済み' && (x.status || 'new') === 'new'));
-    if(!list.length){
-      el.innerHTML = '<div class="muted">DM候補はありません。</div>';
-      return;
-    }
-    el.innerHTML = list.map(x => `
+  async function loadDmCandidatesFromWorker(){
+    const data = await apiGet('/api/threads/dm-candidates?accountId=' + encodeURIComponent(getAccountId()));
+    const el = $('threadsLeadsList');
+    const items = data.dmCandidates || [];
+    if(!el) return items;
+    if(!items.length){ el.innerHTML = '<div class="muted">Worker上のDM候補はありません。</div>'; return items; }
+    el.innerHTML = items.map(x => `
       <div class="item">
-        <div><b>${esc(x.username || x.user_id || 'user')}</b> <span class="threads-mini">${esc(x.status || 'new')}</span></div>
-        <div class="threads-mini">${esc(jp(x.created_at || x.createdAt))}</div>
+        <div><b>${esc(x.username || x.user_id || 'unknown')}</b> <span class="threads-mini">${esc(x.status || 'new')}</span></div>
+        <div class="threads-mini">${esc(x.created_at || x.createdAt || '')}</div>
         <pre>${esc(x.candidate_text || '')}</pre>
         <div class="threads-actions">
-          <button type="button" class="secondary hc-copy-dm" data-copy="${esc((x.candidate_text || '').replace(/"/g,'&quot;'))}">DM候補コピー</button>
+          <button type="button" class="secondary" data-worker-copy-dm="${esc(x.id || '')}">DM候補コピー</button>
+          <button type="button" class="secondary" data-worker-copy-user="${esc(x.username || '')}">@コピー</button>
         </div>
       </div>`).join('');
+    return items;
   }
 
-  function renderLogs(){
-    const html = workerLogs.slice(0,8).map(x => `
+  async function loadLogsFromWorker(){
+    const data = await apiGet('/api/threads/logs?accountId=' + encodeURIComponent(getAccountId()));
+    const logs = data.logs || [];
+    const html = logs.slice(0, 10).map(x => `
       <div class="threads-log-item">
-        <div class="threads-log-time">${esc(jp(x.created_at || x.createdAt))}</div>
-        <div><span class="threads-badge">${esc(x.type || 'Threads')}</span></div>
+        <div class="threads-log-time">${esc(x.created_at || x.createdAt || '')}</div>
+        <div><span class="threads-badge">${esc(x.type || x.level || 'log')}</span></div>
         <div style="margin-top:8px;">${esc(x.message || '')}</div>
       </div>`).join('') || '<div class="muted">まだログはありません。</div>';
-    const a = q('threadsActivitySummary');
-    const b = q('dashboardActivityLog');
-    if(a) a.innerHTML = html;
-    if(b) b.innerHTML = html;
+    if($('threadsActivitySummary')) $('threadsActivitySummary').innerHTML = html;
+    if($('dashboardActivityLog')) $('dashboardActivityLog').innerHTML = html;
+    return logs;
   }
 
-  function renderDashboard(){
-    const summary = q('dashboardThreadsSummary');
-    const stats = q('dashboardThreadsStats');
-    if(summary){
-      const latest = workerLogs[0];
-      summary.innerHTML = `監視投稿 <b>${workerPosts.length}</b>件 / ルール <b>${workerRules.length}</b>件 / DM候補 <b>${workerDmCandidates.length}</b>件${latest ? `<br>最新ログ: <b>${esc(latest.message || '')}</b>` : ''}`;
-    }
-    if(stats){
-      stats.innerHTML = `
-        <div class="threads-stat"><div class="threads-mini">監視投稿</div><div class="n">${workerPosts.length}</div></div>
-        <div class="threads-stat"><div class="threads-mini">ルール</div><div class="n">${workerRules.length}</div></div>
-        <div class="threads-stat"><div class="threads-mini">DM候補</div><div class="n">${workerDmCandidates.length}</div></div>
-        <div class="threads-stat"><div class="threads-mini">ログ件数</div><div class="n">${workerLogs.length}</div></div>`;
-    }
-    const s = q('threadsSummary');
-    if(s){
-      s.innerHTML = `投稿設定: <b>${workerPosts.length}</b>件<br>条件返信ルール: <b>${workerRules.length}</b>件<br>DM候補: <b>${workerDmCandidates.length}</b>件<br>接続先: <b>${esc(API_BASE)}</b>`;
-    }
+  async function loadDashboardStats(){
+    const [posts, rules, dmCandidates, logs] = await Promise.all([
+      apiGet('/api/threads/posts?accountId=' + encodeURIComponent(getAccountId())).catch(()=>({posts:[]})),
+      apiGet('/api/threads/rules?accountId=' + encodeURIComponent(getAccountId())).catch(()=>({rules:[]})),
+      apiGet('/api/threads/dm-candidates?accountId=' + encodeURIComponent(getAccountId())).catch(()=>({dmCandidates:[]})),
+      apiGet('/api/threads/logs?accountId=' + encodeURIComponent(getAccountId())).catch(()=>({logs:[]}))
+    ]);
+    const statEl = $('dashboardThreadsStats');
+    const summary = $('dashboardThreadsSummary');
+    const p=(posts.posts||[]).length, r=(rules.rules||[]).length, d=(dmCandidates.dmCandidates||[]).length, l=(logs.logs||[]).length;
+    if(summary) summary.innerHTML = `Worker投稿 <b>${p}</b>件 / ルール <b>${r}</b>件 / DM候補 <b>${d}</b>件 / ログ <b>${l}</b>件`;
+    if(statEl) statEl.innerHTML = `
+      <div class="threads-stat"><div class="threads-mini">投稿</div><div class="n">${p}</div></div>
+      <div class="threads-stat"><div class="threads-mini">ルール</div><div class="n">${r}</div></div>
+      <div class="threads-stat"><div class="threads-mini">DM候補</div><div class="n">${d}</div></div>
+      <div class="threads-stat"><div class="threads-mini">ログ</div><div class="n">${l}</div></div>`;
   }
 
-  async function refreshAll(){
-    await Promise.allSettled([getPosts(), getRules(), getDmCandidates(), getLogs()]);
-    renderPosts();
-    renderRules();
-    renderDmCandidates();
-    renderLogs();
-    renderDashboard();
-  }
-
-  function swapButton(id, handler){
-    const old = q(id);
-    if(!old) return null;
-    const clone = old.cloneNode(true);
-    old.parentNode.replaceChild(clone, old);
-    clone.addEventListener('click', handler);
-    return clone;
-  }
-
-  function injectExtraButtons(){
-    const postsWrap = q('threadsSavePostBtn')?.parentElement;
-    if(postsWrap && !q('threadsRefreshPostsBtn')){
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.id = 'threadsRefreshPostsBtn';
-      btn.className = 'secondary';
-      btn.textContent = 'Worker同期';
-      btn.addEventListener('click', async ()=>{ await refreshAll(); hcToast('Workerから同期しました', true); });
-      postsWrap.appendChild(btn);
-    }
-    const automationWrap = q('threadsRunSimulationBtn')?.parentElement;
-    if(automationWrap && !q('threadsRunWorkerBtn')){
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.id = 'threadsRunWorkerBtn';
-      btn.textContent = 'Worker巡回実行';
-      btn.addEventListener('click', async ()=>{
-        try{
-          const data = await api('/api/threads/run-check', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({accountId: ACCOUNT_ID})});
-          const pre = q('threadsAutomationPreview');
-          const info = data.summary || {};
-          if(pre) pre.textContent = `巡回完了
-checkedPosts: ${info.checkedPosts ?? 0}
-fetchedComments: ${info.fetchedComments ?? 0}
-matched: ${info.matched ?? 0}
-dmCreated: ${info.dmCreated ?? 0}
-skipped: ${info.skipped ?? 0}`;
-          const rs = q('threadsSimulationResult');
-          if(rs) rs.textContent = 'Worker巡回を実行しました';
-          await refreshAll();
-          hcToast('Worker巡回を実行しました', true);
-        }catch(e){ hcToast('巡回失敗: ' + e.message, false); }
-      });
-      automationWrap.appendChild(btn);
-    }
-    const monitorWrap = q('threadsSaveMonitorBtn')?.parentElement;
-    if(monitorWrap && !q('threadsReloadLogsBtn')){
-      const btn = document.createElement('button');
-      btn.type='button';
-      btn.id='threadsReloadLogsBtn';
-      btn.className='secondary';
-      btn.textContent='ログ更新';
-      btn.addEventListener('click', async ()=>{ await getLogs(); renderLogs(); renderDashboard(); hcToast('ログ更新しました', true); });
-      monitorWrap.appendChild(btn);
+  async function syncAllFromWorker(){
+    try {
+      updateWorkerStatus('同期中...');
+      await Promise.all([loadPostsFromWorker(), loadRulesFromWorker(), loadDmCandidatesFromWorker(), loadLogsFromWorker(), loadDashboardStats()]);
+      rerenderWorkerSummary();
+      updateWorkerStatus('同期完了');
+      toast('Threads Worker同期完了');
+    } catch(e){
+      updateWorkerStatus('同期失敗');
+      toast('同期失敗: ' + e.message);
     }
   }
 
-  function wireEvents(){
-    swapButton('threadsSavePostBtn', async function(){
-      try{
-        const postUrl = (q('threadsPostTarget')?.value || '').trim();
-        if(!postUrl) return hcToast('投稿URLか投稿IDを入れてください', false);
-        await api('/api/threads/posts', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({accountId: ACCOUNT_ID, postUrl})});
-        await refreshAll();
-        hcToast('投稿をWorkerへ保存しました', true);
-      }catch(e){ hcToast('投稿保存失敗: ' + e.message, false); }
-    });
+  async function runCheckFromWorker(){
+    try {
+      updateWorkerStatus('巡回実行中...');
+      const data = await apiPost('/api/threads/run-check', { accountId:getAccountId() });
+      const s = data.summary || {};
+      saveLastRun(s);
+      const preview = $('threadsAutomationPreview');
+      const result = $('threadsSimulationResult');
+      if(result) result.textContent = `巡回完了: 取得 ${Number(s.fetchedComments||0)} / 一致 ${Number(s.matched||0)} / DM候補 ${Number(s.dmCreated||0)}`;
+      if(preview) preview.textContent = JSON.stringify(data, null, 2);
+      await Promise.all([loadDmCandidatesFromWorker(), loadLogsFromWorker(), loadDashboardStats()]);
+      updateWorkerStatus('巡回完了');
+      toast('Worker巡回を実行しました');
+    } catch(e){
+      updateWorkerStatus('巡回失敗');
+      toast('巡回失敗: ' + e.message);
+    }
+  }
 
-    swapButton('threadsSaveRuleBtn', async function(){
-      try{
-        const ruleName = (q('threadsRuleName')?.value || '').trim();
-        const keywords = (q('threadsRuleKeywords')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
-        const replyText = (q('threadsRuleReply')?.value || '').trim();
-        const action = q('threadsRuleAction')?.value || 'reply_and_dm_candidate';
-        if(!ruleName || !keywords.length) return hcToast('ルール名とキーワードを入れてください', false);
+  function rerenderWorkerSummary(){
+    const el = $('threadsSummary');
+    if(!el) return;
+    const api = getApiBase();
+    const accountId = getAccountId();
+    const extra = `<br>Worker API: <b>${esc(api)}</b><br>accountId: <b>${esc(accountId)}</b>`;
+    if(!el.innerHTML.includes('Worker API')) el.innerHTML += extra;
+  }
+
+  function rebindSavePost(){
+    const btn = $('threadsSavePostBtn');
+    if(!btn || btn.dataset.workerBound==='1') return;
+    btn.dataset.workerBound='1';
+    btn.addEventListener('click', async (e)=>{
+      e.preventDefault(); e.stopImmediatePropagation();
+      try {
+        const postUrl = ($('threadsPostTarget')?.value || '').trim();
+        const title = ($('threadsPostTitle')?.value || '').trim();
+        const note = ($('threadsPostNote')?.value || '').trim();
+        if(!postUrl) { toast('投稿URLか投稿IDを入れてください'); return; }
+        const data = await apiPost('/api/threads/posts', { accountId:getAccountId(), postUrl, title, note });
+        await loadPostsFromWorker();
+        await loadLogsFromWorker();
+        await loadDashboardStats();
+        updateWorkerStatus('投稿保存済み');
+        toast('投稿をWorkerへ保存しました');
+      } catch(err){ toast('投稿保存失敗: ' + err.message); }
+    }, true);
+  }
+
+  function rebindSaveRule(){
+    const btn = $('threadsSaveRuleBtn');
+    if(!btn || btn.dataset.workerBound==='1') return;
+    btn.dataset.workerBound='1';
+    btn.addEventListener('click', async (e)=>{
+      e.preventDefault(); e.stopImmediatePropagation();
+      try {
+        const ruleName = ($('threadsRuleName')?.value || '').trim();
+        const keywords = ($('threadsRuleKeywords')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+        const replyText = ($('threadsRuleReply')?.value || '').trim();
+        const uiAction = ($('threadsRuleAction')?.value || 'reply_and_dm_candidate');
+        if(!ruleName || !keywords.length){ toast('ルール名とキーワードを入れてください'); return; }
         let actionType = 'dm_candidate';
-        if(action === 'reply_only') actionType = 'public_reply';
-        if(action === 'full') actionType = 'both';
-        await api('/api/threads/rules', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({accountId: ACCOUNT_ID, ruleName, keywords, excludeKeywords: [], replyText, actionType, matchType: 'partial', priority: 10})});
-        await refreshAll();
-        hcToast('ルールをWorkerへ保存しました', true);
-      }catch(e){ hcToast('ルール保存失敗: ' + e.message, false); }
-    });
+        if(uiAction === 'reply_only') actionType = 'public_reply';
+        if(uiAction === 'full') actionType = 'both';
+        const data = await apiPost('/api/threads/rules', {
+          accountId:getAccountId(),
+          ruleName, keywords, excludeKeywords:[], replyText,
+          actionType, matchType:'partial', priority:10
+        });
+        await loadRulesFromWorker();
+        await loadLogsFromWorker();
+        await loadDashboardStats();
+        updateWorkerStatus('ルール保存済み');
+        toast('ルールをWorkerへ保存しました');
+      } catch(err){ toast('ルール保存失敗: ' + err.message); }
+    }, true);
+  }
 
-    swapButton('threadsRunSimulationBtn', async function(){
-      try{
-        const data = await api('/api/threads/run-check', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({accountId: ACCOUNT_ID})});
-        const info = data.summary || {};
-        const pre = q('threadsAutomationPreview');
-        if(pre) pre.textContent = `巡回完了
-checkedPosts: ${info.checkedPosts ?? 0}
-fetchedComments: ${info.fetchedComments ?? 0}
-matched: ${info.matched ?? 0}
-dmCreated: ${info.dmCreated ?? 0}
-skipped: ${info.skipped ?? 0}`;
-        const rs = q('threadsSimulationResult');
-        if(rs) rs.textContent = 'Worker巡回を実行しました';
-        await refreshAll();
-        hcToast('巡回成功', true);
-      }catch(e){ hcToast('巡回失敗: ' + e.message, false); }
-    });
+  function rebindExports(){
+    const csvBtn = $('threadsExportCsvBtn');
+    const jsonBtn = $('threadsExportJsonBtn');
+    if(csvBtn && !csvBtn.dataset.workerBound){
+      csvBtn.dataset.workerBound = '1';
+      csvBtn.addEventListener('click', async (e)=>{
+        e.preventDefault(); e.stopImmediatePropagation();
+        try {
+          const data = await apiGet('/api/threads/dm-candidates?accountId=' + encodeURIComponent(getAccountId()));
+          const items = data.dmCandidates || [];
+          if(!items.length){ toast('出力できるDM候補がありません'); return; }
+          const header = ['id','username','candidate_text','status','created_at'];
+          const rows = items.map(x => header.map(k => '"' + String(x[k] ?? '').replace(/"/g,'""') + '"').join(','));
+          const blob = new Blob([[header.join(',')].concat(rows).join('\n')], { type:'text/csv;charset=utf-8' });
+          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'threads_dm_candidates.csv'; a.click(); URL.revokeObjectURL(a.href);
+          toast('CSV出力しました');
+        } catch(err){ toast('CSV出力失敗: ' + err.message); }
+      }, true);
+    }
+    if(jsonBtn && !jsonBtn.dataset.workerBound){
+      jsonBtn.dataset.workerBound = '1';
+      jsonBtn.addEventListener('click', async (e)=>{
+        e.preventDefault(); e.stopImmediatePropagation();
+        try {
+          const data = await apiGet('/api/threads/dm-candidates?accountId=' + encodeURIComponent(getAccountId()));
+          const items = data.dmCandidates || [];
+          const blob = new Blob([JSON.stringify(items, null, 2)], { type:'application/json;charset=utf-8' });
+          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'threads_dm_candidates.json'; a.click(); URL.revokeObjectURL(a.href);
+          toast('JSON出力しました');
+        } catch(err){ toast('JSON出力失敗: ' + err.message); }
+      }, true);
+    }
+  }
 
-    swapButton('threadsGenerateDmOnlyBtn', async function(){
-      await getDmCandidates();
-      renderDmCandidates();
-      renderDashboard();
-      hcToast('DM候補を再取得しました', true);
-    });
-
-    swapButton('threadsExportJsonBtn', function(){
-      const blob = new Blob([JSON.stringify(workerDmCandidates, null, 2)], {type: 'application/json;charset=utf-8'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'threads_dm_candidates.json';
-      a.click();
-      URL.revokeObjectURL(a.href);
-      hcToast('JSONを書き出しました', true);
-    });
-
-    swapButton('threadsExportCsvBtn', function(){
-      const header = ['username','candidate_text','status','created_at'];
-      const rows = workerDmCandidates.map(x => header.map(k => '"' + String(x[k] ?? '').replace(/"/g,'""') + '"').join(','));
-      const csv = [header.join(',')].concat(rows).join('
-');
-      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'threads_dm_candidates.csv';
-      a.click();
-      URL.revokeObjectURL(a.href);
-      hcToast('CSVを書き出しました', true);
-    });
-
-    q('threadsLeadFilter')?.addEventListener('change', renderDmCandidates);
-    document.addEventListener('click', async function(e){
-      const btn = e.target.closest('.hc-copy-dm');
-      if(!btn) return;
-      const txt = btn.getAttribute('data-copy') || '';
-      try{ await navigator.clipboard.writeText(txt); hcToast('DM候補をコピーしました', true); }catch(err){ hcToast('コピー失敗', false); }
+  function bindLeadCopyActions(){
+    document.addEventListener('click', async (e)=>{
+      const dmBtn = e.target.closest('[data-worker-copy-dm]');
+      if(dmBtn){
+        const item = dmBtn.closest('.item');
+        const txt = item?.querySelector('pre')?.textContent || '';
+        await copyText(txt);
+        toast('DM候補をコピーしました');
+        return;
+      }
+      const userBtn = e.target.closest('[data-worker-copy-user]');
+      if(userBtn){
+        const txt = userBtn.getAttribute('data-worker-copy-user') || '';
+        await copyText(txt);
+        toast('ユーザー名をコピーしました');
+      }
     });
   }
 
-  function setDmPreview(){
-    const box = q('threadsDmPreview');
-    if(!box) return;
-    box.textContent = 'Worker連携中
-接続先: ' + API_BASE + '
-アカウント: ' + ACCOUNT_ID + '
-
-DM候補は「リード一覧」に表示されます。';
-  }
-
-  async function boot(){
-    injectExtraButtons();
-    wireEvents();
-    setDmPreview();
-    await refreshAll();
+  function boot(){
+    ensureWorkerBar();
+    ensureWorkerSettingsCard();
+    ensureAutomationButtons();
+    rebindSavePost();
+    rebindSaveRule();
+    rebindExports();
+    bindLeadCopyActions();
+    renderLastRunSummary();
+    syncAllFromWorker();
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
